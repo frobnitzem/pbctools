@@ -1,3 +1,13 @@
+2008-10-27  Olaf Lenz  <olenz@true>
+
+	* doc/index.html: History and credits will be included from the
+	NEWS and AUTHORS file in the future.
+
+	* doc/ChangeLog: Moved one directory up.
+
+	* NEWS, README, AUTHORS: Created files with release notes, basic
+	docs and credits.
+
 2008-10-04  Olaf Lenz  <olenz@qwghlm>
 
 	* Advanced to version 2.3.

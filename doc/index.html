@@ -1,6 +1,9 @@
 <!--#set var="TITLE" value="PBCTools Plugin, Version 2.3"-->
 <!--#include virtual="/Research/vmd/include/header-vmd.shtml"-->
 
+<!-- HTML docs as used on the VMD homepage in
+  http://www.ks.uiuc.edu/Research/vmd/plugins/pbctools/
+-->
 
 <div style="text-align: right; font-weight: bold">by Jerome Henin,
 Olaf Lenz, Cameron Mura and Jan Saam</div>
@@ -21,8 +24,7 @@ simulations). </p>
 <li><a href="#unwrap">Unwrapping atoms</a></li>
 <li><a href="#join">Joining compounds</a></li>
 <li><a href="#box">Drawing a unitcell box</a></li>
-<li><a href="#history">History of <code>pbctools</code></a></li>
-<li><a href="#credits">Credits</a></li>
+<li><a href="#releasenotes">Release notes and credits</a></li>
 </ul>
 
 <hr>
@@ -641,74 +643,61 @@ geometry.
   <dd><pre>
   # draw a box around the central image
   set box0 [pbc box_draw -shiftcenterrel { 0 0 0 }]
-  # draw a box around the cenral image shifted by the unit cell vector C 
+  # draw a box around the central image shifted by the unit cell vector C 
   set box1 [pbc box_draw -shiftcenterrel { 0 0 1 }]
   </pre>
 </dl>
 
 <hr>
-<a name="history"></a>
-<h3>History</h3>
+<a name="releasenotes"></a>
+<h3>Release notes</h3>
 
-In the following, we list the user-visible changes in the
-<code>pbctools</code> plugin.
+<pre>
+Changes in v2.3
+---------------
 
-<h4>Changes in v2.3</h4>
+* Bugfix (Thanks to Chris Maffeo!) of "pbc wrap -compound segment".
+* Improved implementation of "pbc join -compound bonded", that uses
+  VMDs "fragment" keyword now.
+* Renamed "-rectangular" option of "pbc box" and "pbc wrap" to
+* "-orthorhombic" (Translation hint thanks to Jon Halverson).
 
-<ul>
-  <li>Bugfix (Thanks to Chris Maffeo!) of <code>pbc wrap -compound
-  segment</code>.</li>
-  <li>Improved implementation of <code>pbc join -compound
-  bonded</code>, that uses VMDs <code>fragment</code> keyword now.
-  <li>Renamed <code>-rectangular</code> option of <code>pbc box</code>
-  and <code>pbc wrap</code> to <code>-orthorhombic</code> (Translation
-  hint thanks to Jon Halverson).
-</ul>
+Changes in v2.2
+---------------
 
-<h4>Changes in v2.2</h4>
+* Docfixes.
+* Changed default compound option of "pbc wrap" to "-nocompound".
 
-<ul>
-  <li>Docfixes.</li>
-  <li>Changed default compound option of <code><a href="#wrap">pbc
-  wrap</a></code> to <code>-nocompound</code>.
-</ul>
+Changes in v2.1
+---------------
 
-<h4>Changes in v2.1</h4>
+* Added "pbc join".
+* Improved error handling.
+* "wrap", "unwrap" and "join" have an option "-verbose" for verbose
+  output. Furthermore, the functions report their progress while they
+  work.
+* Improved documentation.
+* Various bugfixes.
 
-<ul>
-  <li>Added <code><a href="#join">pbc join</a></code>.</li>
-  <li>Improved error handling.</li>
-  <li><code>wrap</code>, <code>unwrap</code> and <code>join</code> have
-  an option <code>-verbose</code> for verbose output. Furthermore, the
-  functions report their progress while they work.</li>
-  <li>Improved documentation.</li>
-  <li>Various bugfixes.</li>
-</ul>
+Initial version (v2.0)
+----------------------
 
-<h4>Initial version (v2.0)</h4>
-
-Several mainly independent scripts written by different authors from
+* Several mainly independent scripts written by different authors from
 the script library have been assembled by Olaf Lenz to form the
-<code>pbctools</code> plugin.
+"pbctools" plugin. 
 
-<hr>
-<a name="credits"></a>
-<h3>Credits</h3>
+
+CREDITS
+-------
 
 The PBCTools plugin has been written by (in alphabetical order)
-<ul>
-  <li>Jerome Henin <tt>&lt;jhenin _at_ cmm.upenn.edu&gt;</tt>
-  </li>
-  <li>Olaf Lenz <tt>&lt;lenzo _at_ mpip-mainz.mpg.de&gt;</tt>
-  (maintainer)
-  </li>
-  <li>Cameron Mura <tt>&lt;cmura _at_ mccammon.ucsd.edu&gt;</tt>
-  </li>
-  <li>Jan Saam <tt>&lt;saam _at_ charite.de&gt;</tt>
-  </li>
-</ul>
+* Jerome Henin <jhenin _at_ cmm.upenn.edu>
+* Olaf Lenz <lenzo _at_ mpip-mainz.mpg.de&gt> (maintainer)
+* Cameron Mura <cmura _at_ mccammon.ucsd.edu>
+* Jan Saam <saam _at_ charite.de>
 
-The <tt>pbcbox</tt> procedure copies a lot of the ideas of Axel
-Kohlmeyer's script <tt>vmd_draw_unitcell</tt>.
+The "pbcbox" procedure copies a lot of the ideas of Axel Kohlmeyer's
+script "vmd_draw_unitcell".
+</pre>
 
 <!--#include virtual="/Research/vmd/include/footer-vmd.shtml"-->

@@ -1,0 +1,33 @@
+Changes in v2.3
+---------------
+
+* Bugfix (Thanks to Chris Maffeo!) of "pbc wrap -compound segment".
+* Improved implementation of "pbc join -compound bonded", that uses
+  VMDs "fragment" keyword now.
+* Renamed "-rectangular" option of "pbc box" and "pbc wrap" to
+* "-orthorhombic" (Translation hint thanks to Jon Halverson).
+
+Changes in v2.2
+---------------
+
+* Docfixes.
+* Changed default compound option of "pbc wrap" to "-nocompound".
+
+Changes in v2.1
+---------------
+
+* Added "pbc join".
+* Improved error handling.
+* "wrap", "unwrap" and "join" have an option "-verbose" for verbose
+  output. Furthermore, the functions report their progress while they
+  work.
+* Improved documentation.
+* Various bugfixes.
+
+Initial version (v2.0)
+----------------------
+
+* Several mainly independent scripts written by different authors from
+the script library have been assembled by Olaf Lenz to form the
+"pbctools" plugin. 
+
