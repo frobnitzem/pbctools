@@ -27,7 +27,7 @@ namespace eval ::PBCTools:: {
     #   -now
     #   -sel $sel
     #   -noref|-ref $sel
-    #   -verbose
+    #   -[no]verbose
     #
     # AUTHOR: Olaf
     #
@@ -54,7 +54,8 @@ namespace eval ::PBCTools:: {
 		"-sel" { set seltext $val; incr argnum }
 		"-ref" { set ref $val; incr argnum }
 		"-noref" { set ref "all"; }
-		"-verbose" { incr verbose }
+		"-verbose" { set verbose 1 }
+		"-noverbose" { set verbose 0 }
 		default { error "pbcjoin: unknown option: $arg" }
 	    }
 	}

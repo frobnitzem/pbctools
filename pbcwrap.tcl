@@ -75,7 +75,8 @@ namespace eval ::PBCTools:: {
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-draw" { set draw 1 }
 		"-nodraw" { set draw 0 }
-		"-verbose" { incr verbose }
+		"-verbose" { set verbose 1 }
+		"-noverbose" { set verbose 0 }
 		default { error "pbcwrap: unknown option: $arg" }
 	    }
 	}

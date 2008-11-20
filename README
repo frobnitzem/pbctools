@@ -3,4 +3,8 @@ VMD pbctools plugin
 
 For documentation of the plugin, please refer to 
 
-    doc/index.html
+    doc/pbctools.tex
+
+or to the plugins home page at
+
+   http://www.espresso-pp.de/projects/pbctools

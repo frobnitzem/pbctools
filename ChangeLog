@@ -1,3 +1,13 @@
+2008-11-20  Olaf Lenz  <lenzo@pckr76.mpip-mainz.mpg.de>
+
+	* pbcwrap.tcl, pbcunwrap.tcl, pbcjoin.tcl: Added option
+	"-noverbose" for completeness.
+
+	* doc/index.html: Now contains only link to the pbctools gfroge
+	home page: http://www.espresso-pp.de/projects/pbctools/ 
+	
+	* doc/pbctools.tex: Translated doc/index.html to LaTeX.
+
 2008-10-27  Olaf Lenz  <olenz@true>
 
 	* doc/index.html: History and credits will be included from the

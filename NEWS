@@ -1,3 +1,11 @@
+Changes in v2.4
+---------------
+
+* Added option "-noverbose" to wrap, unwrap and join for completeness.
+* Translated documentation to LaTeX format to allow the distribution
+  of the docs together with the plugin.
+* Moved plugin to http://www.espresso-pp.de/projects/pbctools/ .
+
 Changes in v2.3
 ---------------
 
@@ -5,7 +13,7 @@ Changes in v2.3
 * Improved implementation of "pbc join -compound bonded", that uses
   VMDs "fragment" keyword now.
 * Renamed "-rectangular" option of "pbc box" and "pbc wrap" to
-* "-orthorhombic" (Translation hint thanks to Jon Halverson).
+  "-orthorhombic" (Translation hint thanks to Jon Halverson).
 
 Changes in v2.2
 ---------------

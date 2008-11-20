@@ -23,7 +23,7 @@ namespace eval ::PBCTools:: {
     #   -last $last|last|now
     #   -all|allframes
     #   -sel $sel
-    #   -verbose
+    #   -[no]verbose
     #
     # AUTHORS: Olaf, Jerome, Cameron
     #
@@ -47,7 +47,8 @@ namespace eval ::PBCTools:: {
 		"-all" { set last "last"; set first "first" }
 		"-now" { set last "now"; set first "now" }
 		"-sel" { set seltext $val; incr argnum }
-		"-verbose" { incr verbose }
+		"-verbose" { set verbose 1 }
+		"-noverbose" { incr verbose 0 }
 		default { error "pbcunwrap: unknown option: $arg" }
 	    }
 	}
