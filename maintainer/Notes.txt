@@ -1,0 +1,27 @@
+**************************************************
+************* Notes for pbctools *****************
+**************************************************
+
+Bump version number:
+> cd pbctools/trunk
+> perl maintainer/bump_version.pl <VERSION>
+
+Tag relase:
+> cd pbctools
+> svn copy \
+  http://www.espresso-pp.de/svn/pbctools/trunk \
+  http://www.espresso-pp.de/svn/pbctools/releases/pbctools-<VERSION>
+> svn commit
+> svn update
+
+Tar release:
+> cd pbctools/tags
+> tar_release.sh <DIR-NAME>
+
+Build docs:
+> cd pbctools/trunk/doc
+> pdflatex pbctools
+> pdflatex pbctools
+
+
+

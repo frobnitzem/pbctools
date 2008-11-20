@@ -1,5 +1,8 @@
 2008-11-20  Olaf Lenz  <lenzo@pckr76.mpip-mainz.mpg.de>
 
+	* maintainer/: Added maintainer directory that contains scripts
+	and notes for the maintainer.
+
 	* pbcwrap.tcl, pbcunwrap.tcl, pbcjoin.tcl: Added option
 	"-noverbose" for completeness.
 

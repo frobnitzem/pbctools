@@ -8,4 +8,4 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded pbctools 2.3 [list source [file join $dir pbcset.tcl]]\n[list source [file join $dir pbcwrap.tcl]]\n[list source [file join $dir pbcbox.tcl]]\n[list source [file join $dir pbcunwrap.tcl]]\n[list source [file join $dir pbctools.tcl]]\n[list source [file join $dir pbcjoin.tcl]]
+package ifneeded pbctools 2.4 [list source [file join $dir pbcwrap.tcl]]\n[list source [file join $dir pbcunwrap.tcl]]\n[list source [file join $dir pbctools.tcl]]\n[list source [file join $dir pbcset.tcl]]\n[list source [file join $dir pbcjoin.tcl]]\n[list source [file join $dir pbcbox.tcl]]
