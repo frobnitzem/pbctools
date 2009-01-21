@@ -14,7 +14,7 @@
 ##
 ## $Id$
 ##
-package provide pbctools 2.4
+package provide pbctools 2.5
 
 ###################################################
 # Main namespace procedures

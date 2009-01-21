@@ -31,24 +31,34 @@ print "Updateing pkgIndex.tcl...\n";
 system('tclsh maintainer/pkg_mkIndex.tcl');
 print "Finished.\n";
 
-# Bump version in doc/index.html
-$file = "doc/index.html";
+# Bump version in doc/pbctools.tex
+$file = "doc/pbctools.tex";
 
 print "Working on $file.\n";
 open(IN, "<$file") || die "Can't open $file for reading!";
 open(OUT, ">$file.new") || die "Can't open $file.new for writing!";
 
 # Replace version number in the first line
-$_ = <IN>;
-if (s/value="PBCTools Plugin, Version (.*)"/value="PBCTools Plugin, Version $VERSION"/) {
-    print "  $1 -> $VERSION\n";
+while (<IN>) {
+    if (s/^\\date\{Version (.*)\}$/\\date\{Version $VERSION\}/) {
+	print "  $1 -> $VERSION\n";
+    }
+    print OUT $_;
 }
-print OUT $_;
 
-# Just copy the rest of the file
-while (<IN>) { print OUT $_; }
 close(IN);
 close(OUT);
 
 print "  $file.new -> $file.\n";
 rename "$file.new", $file;
+
+# Now rebuild the docs
+print "Now recreating the documentation...\n";
+chdir "doc";
+open(LOG, ">make.log") || die "Can't open make.log for writing!";
+$res = `make`;
+print LOG $res;
+print "See make.log for make output.\n";
+
+system("ls -l pbctools.html pbctools.pdf");
+

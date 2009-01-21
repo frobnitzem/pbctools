@@ -11,7 +11,7 @@
 # $Id$
 #
 
-package provide pbctools 2.4
+package provide pbctools 2.5
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -26,7 +26,8 @@ namespace eval ::PBCTools:: {
     #   -style lines|dashed|arrows|tubes
     #   -width $w
     #   -resolution $res
-    #   -center origin|unitcell|$sel
+    #   -center origin|unitcell|com|centerofmass|bb|boundingbox
+    #   -centersel $sel
     #   -shiftcenter $shift 
     #   -shiftcenterrel $shift
     #
@@ -38,6 +39,7 @@ namespace eval ::PBCTools:: {
 	set style "lines"
 	set orthorhombic 0
 	set center "unitcell"
+	set centerseltext "all"
 	set shiftcenter {0 0 0}
 	set shiftcenterrel {}
 	set width 3
@@ -53,6 +55,7 @@ namespace eval ::PBCTools:: {
 		"-orthorhombic" { set orthorhombic 1 }
 		"-rectangular" { set orthorhombic 1 }
 		"-center" { set center $val; incr argnum }
+		"-centersel" { set centerseltext $val; incr argnum }
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-style"      { set style $val; incr argnum }
@@ -82,21 +85,42 @@ namespace eval ::PBCTools:: {
 	switch -- $center {
 	    "unitcell" { set origin { 0 0 0 } }
 	    "origin" {}
-	    default {
-		# set the origin to the center of the selection
-		set centersel [atomselect $molid "($center)"]
+	    "com" -
+	    "centerofmass" {
+		# set the origin to the center-of-mass of the selection
+		set centersel [atomselect $molid "($centerseltext)"]
 		if { [$centersel num] == 0 } then {
-		    puts "Warning: Selection \"$center\" contains no atoms!"
+		    puts "warning: pbcbox: selection \"$centerseltext\" is empty!"
+		}
+		set sum [measure sumweights $centersel weight mass]
+		if { $sum > 0.0 } then {
+		    set com [measure center $centersel weight mass]
+		} else {
+		    set com [measure center $centersel]
+		    }
+		$centersel delete
+		set origin [vecadd $origin $com]
+	    }
+	    "bb" -
+	    "boundingbox" {
+		# set the origin to the center of the bounding box
+		# around the selection
+		set centersel [atomselect $molid "($centerseltext)"]
+		if { [$centersel num] == 0 } then {
+		    puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
 		}
 		set minmax [measure minmax $centersel]
+		set centerbb \
+		    [vecscale 0.5 \
+			 [vecadd \
+			      [lindex $minmax 0] \
+			      [lindex $minmax 1] \
+			     ]]
 		$centersel delete
-		set origin \
-		    [vecadd $origin \
-			 [vecscale 0.5 \
-			      [vecadd \
-				   [lindex $minmax 0] \
-				   [lindex $minmax 1] \
-				  ]]]
+		set origin [vecadd $origin $centerbb]
+	    }
+	    default {		
+		error "error: pbcbox: bad argument to -center: $center" 
 	    }
 	}
 	
@@ -200,7 +224,6 @@ namespace eval ::PBCTools:: {
 	variable pbcbox_color 
 	variable pbcbox_args
 	variable pbcbox_state
-	variable pbcbox_oldparams
 
 	# Set the defaults
 	set molid "top"
@@ -237,14 +260,10 @@ namespace eval ::PBCTools:: {
 	    # turn it off
 	    # deactivate tracing
 	    trace remove variable vmd_frame($molid) write ::PBCTools::box_update_callback
-	    # unset the unit cell parameters
-	    array unset pbcbox_oldparams "$molid"
 	    # delete the pbcbox
 	    box_update_delete $molid
 	} elseif { !$oldstate && $state } then {
 	    # turn it on
-	    # save the unit cell parameters
-	    set pbcbox_oldparams($molid) [pbcget -now -check]
 	    # draw the box
 	    box_update_draw $molid
 	    # activate tracing
@@ -287,16 +306,11 @@ namespace eval ::PBCTools:: {
 
     # callback function for vmd_frame, used by "box_update on"
     proc box_update_callback { name1 molid op } {
-	variable pbcbox_oldparams
-	if { [pbc get -now] != $pbcbox_oldparams($molid) } then {
-	    box_update_delete $molid
-	    if { [catch { box_update_draw $molid } errMsg] == 1} then {
-		# deactivate tracing
-		trace remove variable vmd_frame($molid) write ::PBCTools::box_update_callback
-		error $errMsg
-	    }
-	    # save the unit cell parameters
-	    set pbcbox_oldparams($molid) $params
+	box_update_delete $molid
+	if { [catch { box_update_draw $molid } errMsg] == 1} then {
+	    # deactivate tracing
+	    trace remove variable vmd_frame($molid) write ::PBCTools::box_update_callback
+	    error $errMsg
 	}
     }
 }

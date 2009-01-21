@@ -1,10 +1,12 @@
 \documentclass[a4paper,DIV12]{scrartcl}
 
-\usepackage[pdftex]{hyperref}
-\usepackage{graphicx}
+\usepackage{hyperref}
 \usepackage{xspace}
 \usepackage{verbatim}           % required for \verbatim and \endverbatim
 \usepackage{fancyvrb}
+
+% no graphics so far
+%\usepackage{graphicx}
 
 \newcommand{\ie}{\emph{i.e.}\xspace}
 \newcommand{\eg}{\emph{e.g.}\xspace}
@@ -21,7 +23,7 @@
 \begin{document}
 \title{\pbctools Plugin User's Guide}
 \author{Jerome Henin \and Olaf Lenz \and Cameron Mura \and Jan Saam}
-\date{Version 2.4}
+\date{Version 2.5}
 
 \maketitle
 
@@ -364,14 +366,6 @@ or very large (default: \texttt{-nocheck}).
 
 Wrap atoms into a single unitcell.
 
-\minisec{Example}
-
-\begin{Verbatim}
-# wrap the system into the orthorhombic box
-# shifted by one box length in X-dir
-pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
-\end{Verbatim}
-
 \minisec{Options}
 
 \begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
@@ -425,10 +419,22 @@ wrapped such that the oxygen atom ends up in the central image
 (default: \texttt{-nocompoundref}).
 \\ \hline
 
-\texttt{-center} \texttt{origin}$|$\texttt{unitcell}$|$\textit{sel}
-& Set the center of the wrapping cell to the origin, to the center of
-the unit cell or to the center of the enclosing box of a given
-selection \textit{sel} (default: \texttt{unitcell}).
+\texttt{-center} \texttt{origin}$|$\texttt{unitcell}\linebreak
+\hspace*{1em}$|$\texttt{com}$|$\texttt{centerofmass}\linebreak 
+\hspace*{1em}$|$\texttt{bb}$|$\texttt{boundingbox}
+& Specify the center of the wrapping cell. The center can be set to
+the origin (\texttt{origin}), to the center of the unit cell
+(\texttt{unitcell}), to the center of mass (\texttt{com} or
+\texttt{centerofmass}) of the selection specified by the option
+\texttt{-centersel}, or to the center of the bounding box (\texttt{bb}
+or \texttt{boundingbox}) of the selection specified by the option
+\texttt{-centersel} (default: \texttt{unitcell}).
+\\ \hline
+
+\texttt{-centersel} \textit{sel}
+& Specify the selection \textit{sel} that defines the center of the
+wrapping cell in the option \texttt{-center} (default:
+\texttt{"all"}).
 \\ \hline
 
 \texttt{-shiftcenter} \textit{shift}
@@ -453,7 +459,14 @@ three numerical values. (default: \verb!{0 0 0}!)
 
 \end{tabular}
 
-\newpage
+\minisec{Example}
+
+\begin{Verbatim}
+# wrap the system into the orthorhombic box
+# shifted by one box length in X-dir
+pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
+\end{Verbatim}
+
 \section{\texttt{unwrap} -- Unwrapping atoms}
 \label{sec:unwrap}
 \minisec{Syntax}
@@ -626,6 +639,13 @@ will automatically adapt to changes in the unit cell parameters in the
 course of a trajectory, as for example for simulations at constant
 pressure. Only a single automatically updated box can exist at a time.
 
+\minisec{Example}
+
+\begin{Verbatim}
+# draw a box, centered on the origin
+pbc box -center origin
+\end{Verbatim}
+
 \minisec{Options}
 
 \begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
@@ -665,10 +685,22 @@ orthorhombic box. (default: \texttt{-parallelepiped}).
 \texttt{8}).
 \\ \hline
 
-\texttt{-center} \texttt{origin}$|$\texttt{unitcell}$|$\textit{sel}
-& Set the center of the box to the origin, to the center of the unit
-cell or to the center of the enclosing box of the given selection
-\textit{sel}. (default: \texttt{unitcell})
+\texttt{-center} \texttt{origin}$|$\texttt{unitcell}\linebreak
+\hspace*{1em}$|$\texttt{com}$|$\texttt{centerofmass}\linebreak 
+\hspace*{1em}$|$\texttt{bb}$|$\texttt{boundingbox}
+& Specify the center of the box. The center can be set to
+the origin (\texttt{origin}), to the center of the unit cell
+(\texttt{unitcell}), to the center of mass (\texttt{com} or
+\texttt{centerofmass}) of the selection specified by the option
+\texttt{-centersel}, or to the center of the bounding box (\texttt{bb}
+or \texttt{boundingbox}) of the selection specified by the option
+\texttt{-centersel} (default: \texttt{unitcell}).
+\\ \hline
+
+\texttt{-centersel} \textit{sel}
+& Specify the selection \textit{sel} that defines the center of the
+wrapping cell in the option \texttt{-center} (default:
+\texttt{"all"}).
 \\ \hline
 
 \texttt{-shiftcenter} \textit{shift}
@@ -683,13 +715,7 @@ three umerical values. (default: \verb!{0 0 0}!)
 \\ \hline
 \end{tabular}
 
-\minisec{Example}
-
-\begin{Verbatim}
-# draw a box, centered on the origin
-pbc box -center origin
-\end{Verbatim}
-
+\newpage
 \subsection{\texttt{box\_draw} -- Drawing a static box}
 \label{sec:box_draw}
 

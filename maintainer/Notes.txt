@@ -19,8 +19,7 @@ Tar release:
 
 Build docs:
 > cd pbctools/trunk/doc
-> pdflatex pbctools
-> pdflatex pbctools
+> make
 
 
 

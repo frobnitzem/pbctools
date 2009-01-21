@@ -9,7 +9,7 @@
 # $Id$
 #
 
-package provide pbctools 2.4
+package provide pbctools 2.5
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -28,7 +28,8 @@ namespace eval ::PBCTools:: {
     #   -sel $sel
     #   -nocompound|-compound res[idue]|seg[ment]|chain
     #   -nocompundref|-compoundref $sel
-    #   -center origin|unitcell|$sel
+    #   -center origin|unitcell|com|centerofmass|bb|boundingbox
+    #   -centersel $sel
     #   -shiftcenter $shift 
     #   -shiftcenterrel $shift
     #   -[no]draw
@@ -46,6 +47,7 @@ namespace eval ::PBCTools:: {
 	set compound ""
 	set compoundref ""
 	set center "unitcell"
+	set centerseltext "all"
 	set shiftcenter {0 0 0}
 	set shiftcenterrel {}
 	set draw 0
@@ -71,13 +73,14 @@ namespace eval ::PBCTools:: {
 		"-nocompoundref" { set compoundref "" }
 		"-compoundref" { set compoundref $val; incr argnum }
 		"-center" { set center $val; incr argnum }
+		"-centersel" { set centerseltext $val; incr argnum }
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-draw" { set draw 1 }
 		"-nodraw" { set draw 0 }
 		"-verbose" { set verbose 1 }
 		"-noverbose" { set verbose 0 }
-		default { error "pbcwrap: unknown option: $arg" }
+		default { error "error: pbcwrap: unknown option: $arg" }
 	    }
 	}
 	
@@ -107,7 +110,7 @@ namespace eval ::PBCTools:: {
 	    "segid" { set compound "segid" }
 	    "chain" { set compound "chain" }
 	    default { 
-		error "pbcwrap: bad argument to -compound: $compound" 
+		error "error: pbcwrap: bad argument to -compound: $compound" 
 	    }
 	}
 
@@ -151,24 +154,46 @@ namespace eval ::PBCTools:: {
 	    } else {
 		set origin [vecscale -0.5 [vecadd $A $B $C]]
 	    }
+	    # compute the center of the box
 	    switch -- $center {
 		"unitcell" { set origin { 0 0 0 } }
 		"origin" {}
-		default {
-		    # set the origin to the center of the selection
-		    set centersel [atomselect $molid "($center)"]
-		    set minmax [measure minmax $centersel]
+		"com" -
+		"centerofmass" {
+		    # set the origin to the center-of-mass of the selection
+		    set centersel [atomselect $molid "($centerseltext)"]
 		    if { [$centersel num] == 0 } then {
-			puts "Warning: Selection \"$center\" contains no atoms!"
+			puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
+		    }
+		    set sum [measure sumweights $centersel weight mass]
+		    if { $sum > 0.0 } then {
+			set com [measure center $centersel weight mass]
+		    } else {
+			set com [measure center $centersel]
 		    }
 		    $centersel delete
-		    set origin \
-			[vecadd $origin \
-			     [vecscale 0.5 \
-				  [vecadd \
-				       [lindex $minmax 0] \
-				       [lindex $minmax 1] \
-				      ]]]
+		    set origin [vecadd $origin $com]
+		}
+		"bb" -
+		"boundingbox" {
+		    # set the origin to the center of the bounding box
+		    # around the selection
+		    set centersel [atomselect $molid "($centerseltext)"]
+		    if { [$centersel num] == 0 } then {
+			puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
+		    }
+		    set minmax [measure minmax $centersel]
+		    set centerbb \
+			[vecscale 0.5 \
+			     [vecadd \
+				  [lindex $minmax 0] \
+				  [lindex $minmax 1] \
+				 ]]
+		    $centersel delete
+		    set origin [vecadd $origin $centerbb]
+		}
+		default {		
+		    error "error: pbcwrap: bad argument to -center: $center" 
 		}
 	    }
 

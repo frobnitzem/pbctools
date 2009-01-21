@@ -1,3 +1,12 @@
+Changes in v2.5
+---------------
+
+* Thanks to Jan Saam, wrap and box are able to center the box on the
+  center of mass of a selection. Added option "-centersel", added
+  arguments "com" and "bb" to option "-center". Note, that "-center
+  $sel" does not work anymore.
+* Automatically generate HTML docs from the LaTeX docs.
+
 Changes in v2.4
 ---------------
 

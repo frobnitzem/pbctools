@@ -1,5 +1,19 @@
+2009-01-21  Olaf Lenz  <olenz@true>
+
+	* Advanced to version 2.5.
+
+	* pbcbox.tcl, pbcwrap.tcl, pbctools.tex: Commands pbcwrap and
+	pbcbox: Added option "-centersel" that takes a selection. The
+	option "-center" does not take the $sel argument anymore, instead
+	the keywords "com", "centerofmass", "bb" or "boundingbox" can be
+	used to denote that the center of the box/wrapping is in the
+	center of mass or the center of the bounding box of the given
+	selection.
+
 2008-11-20  Olaf Lenz  <lenzo@pckr76.mpip-mainz.mpg.de>
 
+	* Advanced to version 2.4.
+	
 	* maintainer/: Added maintainer directory that contains scripts
 	and notes for the maintainer.
 
