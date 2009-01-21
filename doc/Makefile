@@ -19,8 +19,7 @@ pbctools.html: pbctools.tex pbctools.cfg
 index.html: pbctools.html pbctools.pl
 	perl pbctools.pl pbctools.html > index.html
 
-CLEANFILES= pbctools.pdf pbctools.html index.html \
-	pbctools.css pbctools.log \
+CLEANFILES= make.log pbctools.log \
 	$(TEX4HTTEMPFILES)
 clean:
 	-rm $(CLEANFILES)

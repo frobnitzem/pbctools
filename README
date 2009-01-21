@@ -1,9 +1,12 @@
 VMD pbctools plugin
 -------------------
 
-For documentation of the plugin, please refer to 
+For documentation of the plugin, please refer to the docs on wither of
+the following files
 
-    doc/pbctools.tex
+    doc/pbctools.tex 
+    doc/pbctools.html 
+    doc/pbctools.pdf
 
 or to the plugins home page at
 
