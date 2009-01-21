@@ -5,7 +5,7 @@ pbctools.pdf: pbctools.tex
 	pdflatex pbctools.tex
 	pdflatex pbctools.tex
 
-TEX4HTTEMPFILES=pbctools.4ct pbctools.4tc \
+TEX4HTTEMPFILES=pbctools.4ct pbctools.4tc pbctools.out \
 	pbctools.lg pbctools.aux pbctools.dvi pbctools.idv \
 	pbctools.tmp pbctools.toc pbctools.xref texput.log
 
