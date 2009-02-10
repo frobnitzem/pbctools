@@ -405,7 +405,7 @@ namespace eval ::PBCTools:: {
 	    set b     [lindex $vmdcell 1]
 	    set c     [lindex $vmdcell 2]
 	} else {
-	    puts "usage: pbc_vmd2namd a b c \[ alpha beta gamma \]"
+	    vmdcon -info "usage: pbc_vmd2namd a b c \[ alpha beta gamma \]"
 	    return
 	}
 
@@ -432,7 +432,7 @@ namespace eval ::PBCTools:: {
 	# Note: Between VMD 1.8.2 and 1.8.3 the definition of the unitcell
 	# parameters changed which is why we have to check the version
 	if {[string compare "1.8.3" [vmdinfo version]]>0} {
-	    #puts "VMD version <= 1.8.2"
+	    #vmdcon -info "VMD version <= 1.8.2"
 	    set alphar [deg2rad $gamma];  # swapped!
 	    set betar  [deg2rad $beta];
 	    set gammar [deg2rad $alpha];  # swapped!
@@ -457,7 +457,7 @@ namespace eval ::PBCTools:: {
 	    set Cl [expr {$c/cos([deg2rad $phi])}]
 	    set C [vecscale $Cl [vecnorm $C]]
 	} else {
-	    #puts "VMD version > 1.8.2 (including 1.8.3aXX)"
+	    #vmdcon -info "VMD version > 1.8.2 (including 1.8.3aXX)"
 	    set cosBC [expr {cos([deg2rad $alpha])}]
 	    set sinBC [expr {sin([deg2rad $alpha])}]
 	    set cosAC [expr {cos([deg2rad $beta])}]
@@ -520,12 +520,12 @@ namespace eval ::PBCTools:: {
 	# Note: Between VMD 1.8.2 and 1.8.3 the definition of the unitcell
 	# parameters changed which is why we have to check the version
 	if {[string compare "1.8.3" [vmdinfo version]]>0} {
-	    # puts "VMD version <= 1.8.2"
+	    # vmdcon -info "VMD version <= 1.8.2"
 	    set gamma [vecangle $B $C]
 	    set beta  [vecangle $A $C]
 	    set alpha [vecangle $A $B]
 	} else {
-	    # puts "VMD version > 1.8.2 (including 1.8.3aXX)"
+	    # vmdcon -info "VMD version > 1.8.2 (including 1.8.3aXX)"
 	    set alpha [vecangle $B $C]
 	    set beta  [vecangle $A $C]
 	    set gamma [vecangle $A $B]
@@ -556,12 +556,12 @@ namespace eval ::PBCTools:: {
     proc pbc_check_cell { cell } {
 	foreach { a b c alpha beta gamma } $cell {}
 	if { $a < 1.0e-10 || $b < 1.0e-10 || $c < 1.0e-10 } then {
-	    error "Suspicious pbc side length (a=$a b=$b c=$c). Have you forgotten to set the pbc parameters?"
+	    vmdcon -error "Suspicious pbc side length (a=$a b=$b c=$c). Have you forgotten to set the pbc parameters?"
 	}
 	if { [expr $alpha < 1.0e-10 || $alpha > 179.999 \
 		  || $beta < 1.0e-10 || $beta > 179.999 \
 		  || $gamma < 1.0e-10 || $gamma > 179.999 ] } then {
-	    error "Suspicious pbc angle (alpha=$alpha beta=$beta gamma=$gamma)."
+	    vmdcon -error "Suspicious pbc angle (alpha=$alpha beta=$beta gamma=$gamma)."
 	} 
 	return;
     }

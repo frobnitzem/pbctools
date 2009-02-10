@@ -5,6 +5,8 @@ Changes in v2.5
   center of mass of a selection. Added option "-centersel", added
   arguments "com" and "bb" to option "-center". Note, that "-center
   $sel" does not work anymore.
+* Thanks to Axel Kohlmeyer, join now checks whether the pbc cell
+  parameters are reasonable.
 * Automatically generate HTML docs from the LaTeX docs.
 
 Changes in v2.4

@@ -5,7 +5,7 @@
 # be set. Use the procedure pbcset on this behalf.
 #
 #   This script copies a lot of the ideas and code from Jan Saams
-# original pbctools script and Axel Kohlmeiers script 
+# original pbctools script and Axel Kohlmeyer's script 
 # vmd_draw_unitcell.
 #
 # $Id$
@@ -90,7 +90,7 @@ namespace eval ::PBCTools:: {
 		# set the origin to the center-of-mass of the selection
 		set centersel [atomselect $molid "($centerseltext)"]
 		if { [$centersel num] == 0 } then {
-		    puts "warning: pbcbox: selection \"$centerseltext\" is empty!"
+		    vmdcon -warn "pbcbox: selection \"$centerseltext\" is empty!"
 		}
 		set sum [measure sumweights $centersel weight mass]
 		if { $sum > 0.0 } then {
@@ -107,7 +107,7 @@ namespace eval ::PBCTools:: {
 		# around the selection
 		set centersel [atomselect $molid "($centerseltext)"]
 		if { [$centersel num] == 0 } then {
-		    puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
+		    vmdcon -warn "pbcwrap: selection \"$centerseltext\" is empty!"
 		}
 		set minmax [measure minmax $centersel]
 		set centerbb \
@@ -120,7 +120,7 @@ namespace eval ::PBCTools:: {
 		set origin [vecadd $origin $centerbb]
 	    }
 	    default {		
-		error "error: pbcbox: bad argument to -center: $center" 
+		vmdcon -error "pbcbox: bad argument to -center: $center" 
 	    }
 	}
 	

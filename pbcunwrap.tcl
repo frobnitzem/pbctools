@@ -89,7 +89,7 @@ namespace eval ::PBCTools:: {
 	# for efficiency reasons, most operations are carried out as
 	# vector operations on all coordinates at once
 	for {incr frame} { $frame <= $last } { incr frame } {
-	    if { $verbose } then { puts "Unwrapping frame $frame..." } 
+	    if { $verbose } then { vmdcon -info "Unwrapping frame $frame..." } 
 
 	    molinfo $molid set frame $frame
 	    $sel frame $frame
@@ -121,12 +121,12 @@ namespace eval ::PBCTools:: {
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {
 		set percentage [format "%3.1f" [expr $fac*($frame-$first+1)]]
-		puts "$percentage% complete (frame $frame)"
+		vmdcon -info "$percentage% complete (frame $frame)"
 		set next_time [expr $time + $show_step]
 	    }
 	}
 	# Rewind to original frame
-	if { $verbose } then { puts "Rewinding to frame $frame_before." }
+	if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
 	animate goto $frame_before
     }
 

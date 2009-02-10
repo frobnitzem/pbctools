@@ -126,15 +126,15 @@ namespace eval ::PBCTools:: {
 	    # no compound case
 	    set wrapsel "($sel) and (not %s)"
 	}
-	if { $verbose } then { puts "wrapsel=$wrapsel" }
+	if { $verbose } then { vmdcon -info "wrapsel=$wrapsel" }
 
-	if { $verbose } then { puts "Wrapping..." }
+	if { $verbose } then { vmdcon -info "Wrapping..." }
 	set next_time [clock clicks -milliseconds]
 	set show_step 1000
 	set fac [expr 100.0/($last - $first + 1)]
 	# Loop over all frames
 	for { set frame $first } { $frame <= $last } { incr frame } {
-	    if { $verbose } then { puts "Wrapping frame $frame..." } 
+	    if { $verbose } then { vmdcon -info "Wrapping frame $frame..." } 
 	    
 	    # Switch to the next frame
 	    molinfo $molid set frame $frame
@@ -163,7 +163,7 @@ namespace eval ::PBCTools:: {
 		    # set the origin to the center-of-mass of the selection
 		    set centersel [atomselect $molid "($centerseltext)"]
 		    if { [$centersel num] == 0 } then {
-			puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
+			vmdcon -warn "pbcwrap: selection \"$centerseltext\" is empty!"
 		    }
 		    set sum [measure sumweights $centersel weight mass]
 		    if { $sum > 0.0 } then {
@@ -180,7 +180,7 @@ namespace eval ::PBCTools:: {
 		    # around the selection
 		    set centersel [atomselect $molid "($centerseltext)"]
 		    if { [$centersel num] == 0 } then {
-			puts "warning: pbcwrap: selection \"$centerseltext\" is empty!"
+			vmdcon -warn "pbcwrap: selection \"$centerseltext\" is empty!"
 		    }
 		    set minmax [measure minmax $centersel]
 		    set centerbb \
@@ -222,17 +222,17 @@ namespace eval ::PBCTools:: {
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {
 		set percentage [format "%3.1f" [expr $fac*($frame-$first+1)]]
-		puts "$percentage% complete (frame $frame)"
+		vmdcon -info "$percentage% complete (frame $frame)"
 		set next_time [expr $time + $show_step]
 	    }
 	}
 	
 	if  { $verbose } then {
-	    puts "Wrapping complete."
+	    vmdcon -info "Wrapping complete."
 	}
 
 	# Rewind to original frame
-	if { $verbose } then { puts "Rewinding to frame $frame_before." }
+	if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
 	animate goto $frame_before
     }
 
@@ -469,7 +469,7 @@ namespace eval ::PBCTools:: {
 	set b1 [lindex $b 0]
 	set b2 [lindex $b 1]
 	set b3 [lindex $b 2]
-	puts "b = $b"
+	vmdcon -info "b = $b"
 	# Get coordinates of $b in terms of cartesian coords
 	set obase_cartcoor  [basis_change $b [list {1 0 0} {0 1 0} {0 0 1}] ]
 	set obase2cartinv [trans_from_rotate $obase_cartcoor]
@@ -490,14 +490,14 @@ namespace eval ::PBCTools:: {
 	}
 	# Get coordinates of $a in terms of $b
 	set m [basis_change [list $a1 $a2 $a3] $b]
-	puts "m = $m"
+	vmdcon -info "m = $m"
 
 	set rmat [measure inverse [trans_from_rotate $m]]
-	puts $rmat
+	vmdcon -info $rmat
 
 	# Scale vectors to their original length
 	set smat [scale_mat [veclength $a1] [veclength $a2] [veclength $a3]]
-	puts "smat = $smat"
+	vmdcon -info "smat = $smat"
 
 	# Get transformation in cartesian coords
 	# actually: [transmult $obase2cart $obase2cartinv $smat $rmat $obase2cart]

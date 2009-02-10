@@ -129,7 +129,10 @@ namespace eval ::PBCTools:: {
 	set fac [expr 100.0/($last - $first + 1)]
 
 	for {set frame $first} { $frame <= $last } { incr frame } {
-	    if { $verbose } then { puts "Joining frame $frame..." } 
+	    if { $verbose } then { 
+		vmdcon -info "Joining frame $frame..." 
+		continue
+	    } 
 	    molinfo $molid set frame $frame
 
 	    # get the current cell 
@@ -137,6 +140,8 @@ namespace eval ::PBCTools:: {
 	    set A [lindex $cell 0]
 	    set B [lindex $cell 1]
 	    set C [lindex $cell 2]
+
+	    pbc_check_cell $cell
 
 	    # loop over all compounds
 	    foreach compound $compoundlist ref $reflist {
@@ -164,13 +169,13 @@ namespace eval ::PBCTools:: {
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {
 		set percentage [format "%3.1f" [expr $fac*($frame-$first+1)]]
-		puts "$percentage% complete (frame $frame)"
+		vmdcon -info "$percentage% complete (frame $frame)"
 		set next_time [expr $time + $show_step]
 	    }
 	}
 
 	# Rewind to original frame
-	if { $verbose } then { puts "Rewinding to frame $frame_before." }
+	if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
 	animate goto $frame_before
     }
 
