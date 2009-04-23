@@ -34,8 +34,8 @@ namespace eval ::PBCTools:: {
     proc pbcjoin { compound args } {
 	# Set the defaults
 	set molid "top"
-	set first "first"
-	set last "last"
+	set first "now"
+	set last "now"
 	set seltext "all"
 	set ref "all"
 	set verbose 0
@@ -78,50 +78,39 @@ namespace eval ::PBCTools:: {
 
 	# create a list of all compounds
 	set compoundlist {}
-	set reflist {}
+	set compoundsel ""
+	set refsel ""
 
 	switch -- $compound {
 	    "seg" -
 	    "segid" {
-		set segids [lsort -integer -unique [$sel get segid]]
-		foreach segid $segids {
-		    lappend compoundlist \
-			[atomselect $molid "($seltext) and (segid $segid)"]
-		    lappend reflist \
-			[atomselect $molid "($ref) and ($seltext) and (segid $segid)"]
-		}
+		set compoundlist [lsort -integer -unique [$sel get segid]]
+		set compoundsel "($seltext) and (segid %s)"
+		set refsel "($ref) and ($seltext) and (segid %s)"
 	    }
 	    "res" -
 	    "resid" -
 	    "residue" {
-		set residues [lsort -integer -unique [$sel get residue]]
-		foreach residue $residues {
-		    lappend compoundlist \
-			[atomselect $molid "($seltext) and (residue $residue)"]
-		    lappend reflist \
-			[atomselect $molid "($ref) and ($seltext) and (residue $residue)"]
-		}
+		set compoundlist [lsort -integer -unique [$sel get residue]]
+		set compoundsel "($seltext) and (residue %s)"
+		set refsel "($ref) and ($seltext) and (residue %s)"
 	    }
 	    "chain" {
-		set chains [lsort -unique [$sel get chain]]
-		foreach chain $chains {
-		    lappend compoundlist \
-			[atomselect $molid "($seltext) and (chain $chain)"]
-		    lappend reflist \
-			[atomselect $molid "($ref) and ($seltext) and (chain $chain)"]
-		}
+		set compoundlist [lsort -unique [$sel get chain]]
+		set compoundsel "($seltext) and (chain %s)"
+		set refsel "($ref) and ($seltext) and (chain %s)"
 	    }
 	    "bonded" -
 	    "fragment" {
-		set fragments [lsort -unique [$sel get fragment]]
-		foreach fragment $fragments {
-		    lappend compoundlist \
-			[atomselect $molid "($seltext) and (fragment $fragment)"]
-		    lappend reflist \
-			[atomselect $molid "($ref) and ($seltext) and (fragment $fragment)"]
-		}
+		set compoundlist [lsort -unique [$sel get fragment]]
+		set compoundsel "($seltext) and (fragment %s)"
+		set refsel "($ref) and ($seltext) and (fragment %s)"
 	    }
 	    default { error "ERROR: pbcjoin: unknown compound type $compound" }
+	}
+	if { $verbose } then {
+	    set length [llength $compoundlist]
+	    vmdcon -info "Will join $length compounds."
 	}
 
 	set next_time [clock clicks -milliseconds]
@@ -131,7 +120,6 @@ namespace eval ::PBCTools:: {
 	for {set frame $first} { $frame <= $last } { incr frame } {
 	    if { $verbose } then { 
 		vmdcon -info "Joining frame $frame..." 
-		continue
 	    } 
 	    molinfo $molid set frame $frame
 
@@ -141,12 +129,13 @@ namespace eval ::PBCTools:: {
 	    set B [lindex $cell 1]
 	    set C [lindex $cell 2]
 
+	    set cell [lindex [pbc get -molid $molid -vmd] 0]
 	    pbc_check_cell $cell
 
 	    # loop over all compounds
-	    foreach compound $compoundlist ref $reflist {
-		$compound frame $frame
-		$ref frame $frame
+	    foreach compoundid $compoundlist {
+		set compound [atomselect $molid [format $compoundsel $compoundid] frame $frame]
+		set ref [atomselect $molid [format $refsel $compoundid] frame $frame]
 
 		# get the coordinates of all atoms in the compound
 		set xs [$compound get x]
@@ -164,6 +153,9 @@ namespace eval ::PBCTools:: {
 		$compound set x $xs
 		$compound set y $ys
 		$compound set z $zs
+
+		$compound delete
+		$ref delete
 	    }
 
 	    set time [clock clicks -milliseconds]

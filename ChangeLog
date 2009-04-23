@@ -1,3 +1,8 @@
+2009-04-23  Olaf Lenz  <olenz@qwghlm>
+
+	* pbcjoin.tcl: Thanks to Dan Lussier: significantly reduced memory
+	footprint of "pbc join".
+
 2009-02-10  Olaf Lenz  <olenz@true>
 
 	* pbcjoin.tcl: Thanks to Axel Kohlmeyer, join now checks whether the pbc cell
