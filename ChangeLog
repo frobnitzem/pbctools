@@ -1,3 +1,8 @@
+2009-04-30  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
+
+	* pbcjoin.tcl (pbcjoin): Some more improvements to "pbc
+	join". Im my tests, I got a performance gain of about 50%.
+
 2009-04-23  Olaf Lenz  <olenz@qwghlm>
 
 	* pbcjoin.tcl: Thanks to Dan Lussier: significantly reduced memory

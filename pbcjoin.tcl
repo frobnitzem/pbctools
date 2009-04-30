@@ -85,29 +85,37 @@ namespace eval ::PBCTools:: {
 	    "seg" -
 	    "segid" {
 		set compoundlist [lsort -integer -unique [$sel get segid]]
-		set compoundsel "($seltext) and (segid %s)"
-		set refsel "($ref) and ($seltext) and (segid %s)"
+		set compoundseltext "segid %s"
 	    }
 	    "res" -
 	    "resid" -
 	    "residue" {
 		set compoundlist [lsort -integer -unique [$sel get residue]]
-		set compoundsel "($seltext) and (residue %s)"
-		set refsel "($ref) and ($seltext) and (residue %s)"
+		set compoundseltext "residue %s"
 	    }
 	    "chain" {
 		set compoundlist [lsort -unique [$sel get chain]]
-		set compoundsel "($seltext) and (chain %s)"
-		set refsel "($ref) and ($seltext) and (chain %s)"
+		set compoundseltext "chain %s"
 	    }
 	    "bonded" -
 	    "fragment" {
 		set compoundlist [lsort -unique [$sel get fragment]]
-		set compoundsel "($seltext) and (fragment %s)"
-		set refsel "($ref) and ($seltext) and (fragment %s)"
+		set compoundseltext "fragment %s"
 	    }
 	    default { error "ERROR: pbcjoin: unknown compound type $compound" }
 	}
+	
+	if { $seltext ne "all" } then {
+	    set seltext "($seltext) and ($compoundseltext)"
+	    set refseltext "($seltext) and ($compoundseltext)"
+	} else {
+	    set seltext "($compoundseltext)"
+	    set refseltext "($compoundseltext)"
+	}
+	if { $ref ne "all" } then {
+	    set refseltext "($ref) and $refseltext"
+	}
+
 	if { $verbose } then {
 	    set length [llength $compoundlist]
 	    vmdcon -info "Will join $length compounds."
@@ -132,30 +140,69 @@ namespace eval ::PBCTools:: {
 	    set cell [lindex [pbc get -molid $molid -vmd] 0]
 	    pbc_check_cell $cell
 
+	    # determine half the box size
+	    set a [expr 0.5 * [lindex $cell 0]]
+	    set b [expr 0.5 * [lindex $cell 1]]
+	    set c [expr 0.5 * [lindex $cell 2]]
+
+	    set joincompounds {}
+	    set xs {}
+	    set ys {}
+	    set zs {}
+	    set rxs {}
+	    set rys {}
+	    set rzs {}
+
 	    # loop over all compounds
 	    foreach compoundid $compoundlist {
-		set compound [atomselect $molid [format $compoundsel $compoundid] frame $frame]
-		set ref [atomselect $molid [format $refsel $compoundid] frame $frame]
+		# select the next compound
+		set compound [atomselect $molid [format $seltext $compoundid] frame $frame]
 
-		# get the coordinates of all atoms in the compound
-		set xs [$compound get x]
-		set ys [$compound get y]
-		set zs [$compound get z]
-		# get the coordinates of the reference atom in the compound
-		set rx [lindex [$ref get x] 0]
-		set ry [lindex [$ref get y] 0]
-		set rz [lindex [$ref get z] 0]
+		# now test whether the compound needs to be joined
+		set minmax [measure minmax $compound]
+		set dx [expr [lindex $minmax 1 0] - [lindex $minmax 0 0]]
+		set dy [expr [lindex $minmax 1 1] - [lindex $minmax 0 1]]
+		set dz [expr [lindex $minmax 1 2] - [lindex $minmax 0 2]]
+		if { $dx > $a || $dy > $b || $dz > $c } then {
+		    set x $compound get x
+		    set y $compound get y
+		    set z $compound get z
+
+		    lappend xs $x
+		    lappend ys $y
+		    lappend zs $z
+		    lappend joincompounds $compoundid
+
+		    # get the coordinates of the reference atom in the compound
+		    set ref [atomselect $molid [format $refseltext $compoundid] frame $frame]
+		    set r [lindex [$ref get { x y z }] 0]
+		    set rx [lindex $r 0]
+		    set ry [lindex $r 1]
+		    set rz [lindex $r 2]
+
+		    foreach x $xs {
+			lappend rxs $rx
+			lappend rys $ry
+			lappend rzs $rz
+		    }
+
+		    $ref delete
+		}
+		$compound delete
+	    }
+
+	    if { [llength $joincompounds] > 0 } then {
+		set sel [atomselect $molid [format $seltext $joincompounds] frame $frame]
 
 		# wrap the coordinates
-		pbcwrap_coordinates $A $B $C xs ys zs $rx $ry $rz
+		pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
 
 		# set the new coordinates
-		$compound set x $xs
-		$compound set y $ys
-		$compound set z $zs
+		$sel set x $xs
+		$sel set y $ys
+		$sel set z $zs
 
-		$compound delete
-		$ref delete
+		$sel delete
 	    }
 
 	    set time [clock clicks -milliseconds]
