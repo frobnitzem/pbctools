@@ -169,11 +169,6 @@ namespace eval ::PBCTools:: {
 		    set y [$compound get y]
 		    set z [$compound get z]
 
-		    lappend xs $x
-		    lappend ys $y
-		    lappend zs $z
-		    lappend joincompounds $compoundid
-
 		    # get the coordinates of the reference atom in the compound
 		    set ref [atomselect $molid [format $refseltext $compoundid] frame $frame]
 		    set r [lindex [$ref get { x y z }] 0]
@@ -181,7 +176,11 @@ namespace eval ::PBCTools:: {
 		    set ry [lindex $r 1]
 		    set rz [lindex $r 2]
 
-		    foreach x $xs {
+		    lappend joincompounds $compoundid
+		    foreach xv $x yv $y zv $z {
+			lappend xs $xv
+			lappend ys $yv
+			lappend zs $zv
 			lappend rxs $rx
 			lappend rys $ry
 			lappend rzs $rz
