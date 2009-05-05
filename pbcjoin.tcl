@@ -78,8 +78,7 @@ namespace eval ::PBCTools:: {
 
 	# create a list of all compounds
 	set compoundlist {}
-	set compoundsel ""
-	set refsel ""
+	set seltext "all"
 
 	switch -- $compound {
 	    "seg" -
@@ -119,12 +118,11 @@ namespace eval ::PBCTools:: {
 	if { $verbose } then {
 	    set numcompounds  [llength $compoundlist]
 	    set numframes [expr $last - $first + 1]
+	    set start_time [clock clicks -milliseconds]
+	    set next_time [clock clicks -milliseconds]
+	    set show_step 1000
 	    vmdcon -info "Will join $numcompounds compounds in $numframes frames."
 	}
-
-	set next_time [clock clicks -milliseconds]
-	set show_step 1000
-
 
 	set framecnt 0
 	for {set frame $first} { $frame <= $last } { incr frame } {
@@ -196,8 +194,14 @@ namespace eval ::PBCTools:: {
 		if {$verbose} then {
 		    set time [clock clicks -milliseconds]
 		    if { $time >= $next_time} then {
-			set percentage [expr 100.0 * ($framecnt*$numcompounds + $compoundcnt) / ($numcompounds*$numframes)]
-			vmdcon -info "$percentage% complete (frame $framecnt/$numframes, compound $compoundcnt/$numcompounds)"
+			set progress [expr ($framecnt*$numcompounds + $compoundcnt) / (1.0*$numcompounds*$numframes)]
+			set elapsed [expr ($time-$start_time)/1000.0]
+
+			set percentage [format "%4.1f" [expr 100.0*$progress]]
+			set elapseds [format "%4.1f" $elapsed]
+			set eta [format "%4.1f" [expr $elapsed/$progress]]
+
+			vmdcon -info "$percentage% complete (frame $framecnt/$numframes, compound $compoundcnt/$numcompounds) $elapseds s / $eta s"
 			set next_time [expr $time + $show_step]
 		    }
 		}
