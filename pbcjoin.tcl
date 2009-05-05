@@ -117,14 +117,16 @@ namespace eval ::PBCTools:: {
 	}
 
 	if { $verbose } then {
-	    set length [llength $compoundlist]
-	    vmdcon -info "Will join $length compounds."
+	    set numcompounds  [llength $compoundlist]
+	    set numframes [expr $last - $first + 1]
+	    vmdcon -info "Will join $numcompounds compounds in $numframes frames."
 	}
 
 	set next_time [clock clicks -milliseconds]
 	set show_step 1000
-	set fac [expr 100.0/($last - $first + 1)]
 
+
+	set framecnt 0
 	for {set frame $first} { $frame <= $last } { incr frame } {
 	    if { $verbose } then { 
 		vmdcon -info "Joining frame $frame..." 
@@ -153,6 +155,7 @@ namespace eval ::PBCTools:: {
 	    set rys {}
 	    set rzs {}
 
+	    set compoundcnt 0
 	    # loop over all compounds
 	    foreach compoundid $compoundlist {
 		# select the next compound
@@ -164,9 +167,9 @@ namespace eval ::PBCTools:: {
 		set dy [expr [lindex $minmax 1 1] - [lindex $minmax 0 1]]
 		set dz [expr [lindex $minmax 1 2] - [lindex $minmax 0 2]]
 		if { $dx > $a || $dy > $b || $dz > $c } then {
-		    set x $compound get x
-		    set y $compound get y
-		    set z $compound get z
+		    set x [$compound get x]
+		    set y [$compound get y]
+		    set z [$compound get z]
 
 		    lappend xs $x
 		    lappend ys $y
@@ -189,6 +192,16 @@ namespace eval ::PBCTools:: {
 		    $ref delete
 		}
 		$compound delete
+
+		if {$verbose} then {
+		    set time [clock clicks -milliseconds]
+		    if { $time >= $next_time} then {
+			set percentage [expr 100.0 * ($framecnt*$numcompounds + $compoundcnt) / ($numcompounds*$numframes)]
+			vmdcon -info "$percentage% complete (frame $framecnt/$numframes, compound $compoundcnt/$numcompounds)"
+			set next_time [expr $time + $show_step]
+		    }
+		}
+		incr compoundcnt
 	    }
 
 	    if { [llength $joincompounds] > 0 } then {
@@ -205,12 +218,12 @@ namespace eval ::PBCTools:: {
 		$sel delete
 	    }
 
-	    set time [clock clicks -milliseconds]
-	    if {$verbose || $frame == $last || $time >= $next_time} then {
-		set percentage [format "%3.1f" [expr $fac*($frame-$first+1)]]
-		vmdcon -info "$percentage% complete (frame $frame)"
-		set next_time [expr $time + $show_step]
-	    }
+	    incr framecnt
+	}
+
+	if {$verbose} then {
+	    set percentage 100
+	    vmdcon -info "100.0% complete (frame $frame, compoundid $compoundid)"
 	}
 
 	# Rewind to original frame
