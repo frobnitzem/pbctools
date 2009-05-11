@@ -60,17 +60,17 @@ namespace eval ::PBCTools:: {
 	    }
 	}
 	
-	if { $molid=="top" } then { set molid [ molinfo top ] }
+	if { $molid eq "top" } then { set molid [ molinfo top ] }
 
 	# Save the current frame number
 	set frame_before [ molinfo $molid get frame ]
 
-	if { $first=="now" }   then { set first $frame_before }
-	if { $first=="first" || $first=="start" || $first=="begin" } then { 
+	if { $first eq "now" }   then { set first $frame_before }
+	if { $first eq "first" || $first eq "start" || $first eq "begin" } then { 
 	    set first 0 
 	}
-	if { $last=="now" }    then { set last $frame_before }
-	if { $last=="last" || $last=="end" } then {
+	if { $last eq "now" }    then { set last $frame_before }
+	if { $last eq "last" || $last eq "end" } then {
 	    set last [expr {[molinfo $molid get numframes]-1}]
 	}
 
@@ -78,12 +78,11 @@ namespace eval ::PBCTools:: {
 
 	# create a list of all compounds
 	set compoundlist {}
-	set seltext "all"
 
 	switch -- $compound {
 	    "seg" -
 	    "segid" {
-		set compoundlist [lsort -integer -unique [$sel get segid]]
+		set compoundlist [lsort -unique [$sel get segid]]
 		set compoundseltext "segid %s"
 	    }
 	    "res" -
@@ -103,10 +102,11 @@ namespace eval ::PBCTools:: {
 	    }
 	    default { error "ERROR: pbcjoin: unknown compound type $compound" }
 	}
+	$sel delete
 	
 	if { $seltext ne "all" } then {
 	    set seltext "($seltext) and ($compoundseltext)"
-	    set refseltext "($seltext) and ($compoundseltext)"
+	    set refseltext $seltext
 	} else {
 	    set seltext "($compoundseltext)"
 	    set refseltext "($compoundseltext)"
@@ -141,6 +141,8 @@ namespace eval ::PBCTools:: {
 	    pbc_check_cell $cell
 
 	    # determine half the box size
+	    # if a compound is larger than half the box size, it can
+	    # be assumed that it needs to be joined
 	    set a [expr 0.5 * [lindex $cell 0]]
 	    set b [expr 0.5 * [lindex $cell 1]]
 	    set c [expr 0.5 * [lindex $cell 2]]
@@ -153,17 +155,25 @@ namespace eval ::PBCTools:: {
 	    set rys {}
 	    set rzs {}
 
+# 	    $refsel frame $frame
+# 	    set rxs [$refsel get x]
+# 	    set rys [$refsel get y]
+# 	    set rzs [$refsel get z]
+
 	    set compoundcnt 0
 	    # loop over all compounds
+#	    foreach compoundid $compoundlist rx $rxs ry $rys rz $rzs
 	    foreach compoundid $compoundlist {
 		# select the next compound
 		set compound [atomselect $molid [format $seltext $compoundid] frame $frame]
 
 		# now test whether the compound needs to be joined
 		set minmax [measure minmax $compound]
-		set dx [expr [lindex $minmax 1 0] - [lindex $minmax 0 0]]
-		set dy [expr [lindex $minmax 1 1] - [lindex $minmax 0 1]]
-		set dz [expr [lindex $minmax 1 2] - [lindex $minmax 0 2]]
+
+		set d [vecsub [lindex $minmax 1] [lindex $minmax 0]]
+		set dx [lindex $d 0]
+		set dy [lindex $d 1]
+		set dz [lindex $d 2]
 		if { $dx > $a || $dy > $b || $dz > $c } then {
 		    set x [$compound get x]
 		    set y [$compound get y]
@@ -176,6 +186,8 @@ namespace eval ::PBCTools:: {
 		    set ry [lindex $r 1]
 		    set rz [lindex $r 2]
 
+		    # append the coordinates of the compounds atoms
+		    # and its reference atom to the result list
 		    lappend joincompounds $compoundid
 		    foreach xv $x yv $y zv $z {
 			lappend xs $xv

@@ -10,7 +10,7 @@ Tag relase:
 > cd pbctools
 > svn copy \
   http://www.espresso-pp.de/svn/pbctools/trunk \
-  http://www.espresso-pp.de/svn/pbctools/releases/pbctools-<VERSION>
+  http://www.espresso-pp.de/svn/pbctools/tags/pbctools-<VERSION>
 > svn update
 
 Tar release:

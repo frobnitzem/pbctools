@@ -1,3 +1,8 @@
+2009-05-11  Olaf Lenz  <olenz@qwghlm>
+
+	* pbcjoin.tcl (pbcjoin): Some more improvements, added more
+	detailed progress report.
+
 2009-04-30  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
 
 	* pbcjoin.tcl (pbcjoin): Some more improvements to "pbc

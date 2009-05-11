@@ -1,6 +1,9 @@
 Changes in v2.5
 ---------------
 
+* Thanks to Dan Lussier and John Stone, join was optimized for a
+  performance gain of about 50% and a massive reduction of the memory
+  footprint.
 * Thanks to Jan Saam, wrap and box are able to center the box on the
   center of mass of a selection. Added option "-centersel", added
   arguments "com" and "bb" to option "-center". Note, that "-center
