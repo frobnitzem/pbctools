@@ -371,7 +371,7 @@ namespace eval ::PBCTools:: {
 		    # this doesn't work.
 		    pbcset $cell -namd -molid $molid -first $effectiveframe -last $effectiveframe $alignx
 
-		    #DB puts "time = $time / effectiveframe = $effectiveframe"
+		    #DB vmdcon -info "time = $time / effectiveframe = $effectiveframe"
 		    if {[llength $log]} {
 			puts $log "pbcreadxst: $frame $time $cell"
 		    }

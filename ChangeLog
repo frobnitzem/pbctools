@@ -1,4 +1,6 @@
-2009-05-14  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
+2009-05-14  Olaf Lenz  <olenz@qwghlm>
+
+	* pbctools.tcl: Applied Axel Kohlmeyer's docfix patch.
 
 	* doc/pbctools.tex: Restructured introduction, abstract and basic
 	usage section. 

@@ -4,7 +4,7 @@
 # boundaries. The procedures required the VMD unit cell properties to
 # be set. Use the procedure pbcset on this behalf.
 #
-#   This script copies a lot of the ideas and code from Jan Saams
+#   This script copies a lot of the ideas and code from Jan Saam's
 # original pbctools script and Axel Kohlmeyer's script 
 # vmd_draw_unitcell.
 #

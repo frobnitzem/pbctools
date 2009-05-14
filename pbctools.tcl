@@ -9,7 +9,7 @@
 ##   Cameron Mura <cmura _at_ mccammon.ucsd.edu>
 ##   Jan Saam <saam _at_ charite.de>
 ##
-## The pbcbox procedure copies a lot of the ideas of Axel Kohlmeiers
+## The pbcbox procedure copies a lot of the ideas of Axel Kohlmeyer's
 ## script vmd_draw_unitcell.
 ##
 ## $Id$
