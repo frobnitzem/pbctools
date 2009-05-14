@@ -1,3 +1,17 @@
+2009-05-14  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
+
+	* doc/pbctools.tex: Restructured introduction, abstract and basic
+	usage section. 
+
+	* pbcjoin.tcl (pbcjoin): Added option "-[no]border", which allows
+	to specify the maximal depth were atoms of a broken compound can
+	be found inside the unit cell. Currently works only for orthorhombic
+	unit cells.
+
+	* pbcwrap.tcl (pbcwrap): "-center" now understands a selection as
+	argument again, for backward compatibility. However, a deprecation
+	warning is printed.
+
 2009-05-11  Olaf Lenz  <olenz@qwghlm>
 
 	* pbcjoin.tcl (pbcjoin): Some more improvements, added more

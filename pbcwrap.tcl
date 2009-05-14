@@ -134,8 +134,6 @@ namespace eval ::PBCTools:: {
 	set fac [expr 100.0/($last - $first + 1)]
 	# Loop over all frames
 	for { set frame $first } { $frame <= $last } { incr frame } {
-	    if { $verbose } then { vmdcon -info "Wrapping frame $frame..." } 
-	    
 	    # Switch to the next frame
 	    molinfo $molid set frame $frame
 
@@ -192,8 +190,27 @@ namespace eval ::PBCTools:: {
 		    $centersel delete
 		    set origin [vecadd $origin $centerbb]
 		}
-		default {		
-		    error "error: pbcwrap: bad argument to -center: $center" 
+		default {
+#		    error "error: pbcwrap: bad argument to -center: $center" 
+
+		    # for backwards compatibility
+		    vmdcon -warn "Using a selection as argument for the option \"-center\" is deprecated."
+		    vmdcon -warn "Please use the option \"-centersel\" to specify the selection!"
+
+		    set centerseltext $center
+		    # set the origin to the center-of-mass of the selection
+		    set centersel [atomselect $molid "($centerseltext)"]
+		    if { [$centersel num] == 0 } then {
+			vmdcon -warn "pbcwrap: selection \"$centerseltext\" is empty!"
+		    }
+		    set sum [measure sumweights $centersel weight mass]
+		    if { $sum > 0.0 } then {
+			set com [measure center $centersel weight mass]
+		    } else {
+			set com [measure center $centersel]
+		    }
+		    $centersel delete
+		    set origin [vecadd $origin $com]
 		}
 	    }
 
@@ -228,6 +245,8 @@ namespace eval ::PBCTools:: {
 	}
 	
 	if  { $verbose } then {
+	    set percentage [format "%3.1f" 100]
+	    vmdcon -info "$percentage% complete (frame $frame)"
 	    vmdcon -info "Wrapping complete."
 	}
 

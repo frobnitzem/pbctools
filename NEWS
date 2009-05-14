@@ -1,13 +1,15 @@
 Changes in v2.5
 ---------------
 
+* Added option "-border" to "pbc join" that allows to specify how deep
+  in the system broken compounds can be found.
 * Thanks to Dan Lussier and John Stone, join was optimized for a
   performance gain of about 50% and a massive reduction of the memory
   footprint.
 * Thanks to Jan Saam, wrap and box are able to center the box on the
   center of mass of a selection. Added option "-centersel", added
   arguments "com" and "bb" to option "-center". Note, that "-center
-  $sel" does not work anymore.
+  $sel" is deprecated.
 * Thanks to Axel Kohlmeyer, join now checks whether the pbc cell
   parameters are reasonable.
 * Automatically generate HTML docs from the LaTeX docs.

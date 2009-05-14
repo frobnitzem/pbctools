@@ -120,7 +120,26 @@ namespace eval ::PBCTools:: {
 		set origin [vecadd $origin $centerbb]
 	    }
 	    default {		
-		vmdcon -error "pbcbox: bad argument to -center: $center" 
+#		vmdcon -error "pbcbox: bad argument to -center: $center" 
+
+		# for backwards compatibility
+		vmdcon -warn "Using a selection as argument for the option \"-center\" is deprecated."
+		vmdcon -warn "Please use the option \"-centersel\" to specify the selection!"
+		
+		set centerseltext $center
+		# set the origin to the center-of-mass of the selection
+		set centersel [atomselect $molid "($centerseltext)"]
+		if { [$centersel num] == 0 } then {
+		    vmdcon -warn "pbcwrap: selection \"$centerseltext\" is empty!"
+		}
+		set sum [measure sumweights $centersel weight mass]
+		if { $sum > 0.0 } then {
+		    set com [measure center $centersel weight mass]
+		} else {
+		    set com [measure center $centersel]
+		}
+		$centersel delete
+		set origin [vecadd $origin $com]
 	    }
 	}
 	
