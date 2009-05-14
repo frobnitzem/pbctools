@@ -1,4 +1,4 @@
-\documentclass[a4paper,DIV12]{scrartcl}
+\documentclass[a4paper, DIV12]{scrartcl}
 
 \usepackage{hyperref}
 \usepackage{xspace}
@@ -27,19 +27,85 @@
 
 \maketitle
 
-\begin{abstract}
-  The VMD plugin ``\pbctools'' provides procedures to handle periodic
-  boundary conditions, \ie to set and get the unitcell parameters, to
-  wrap atoms into the central image, to unwrap atoms when they have
-  been wrapped, and to draw the unit cell vectors. All of the
-  procedures are able to handle non-orthorhombic periodic boundary
-  conditions and changes of the unitcell parameters over time (as for
-  example in constant pressure simulations).
-\end{abstract}
+\section{Introduction}
+The VMD plugin ``\pbctools'' provides the following procedures to
+handle periodic boundary conditions:
 
-\tableofcontents
+\begin{center}
+  \begin{tabular}{|p{0.3\textwidth}|p{0.55\textwidth}|r|}
+    \hline
+    \textbf{Subcommand} & \textbf{Description} & \textbf{p.}\\\hline\hline
+  
+    \mbox{\texttt{set} \textit{cell}} [\textit{options}\dots]
+    & Set the VMD unit cell properties (\eg to use VMD's feature that
+    allows to display periodic copies of the system). 
+    & \pageref{sec:set}
+    \\\hline
+  
+    \mbox{\texttt{readxst} \textit{xstfile}} [\textit{options}\dots]
+    & Read the VMD unit cell properties from an XST file.
+    & \pageref{sec:readxst} 
+    \\\hline
+  
+    \texttt{get} [\textit{options}\dots]
+    & Get the VMD unit cell properties. 
+    & \pageref{sec:get}
+    \\\hline
+  
+    \texttt{wrap} [\textit{options}\dots]
+    & When the atoms of the system are not all in one periodic image,
+    but are distributed over various images, this function wraps all
+    atoms into the chosen image. It is also possible to change between
+    different representations of the unit cell (orthorhombic or triclinic).
+    & \pageref{sec:wrap}
+    \\\hline
+  
+    \texttt{unwrap} [\textit{options}\dots]
+    & When overlong bonds (that stretch the whole system) occur and
+    compounds (residues, segments, chains or fragments) are broken in
+    the course of a simulation trajectory because atoms are wrapped
+    around the periodic boundaries, this function will remove large
+    jumps of atoms between consecutive frames.
+    & \pageref{sec:unwrap}
+    \\\hline
+  
+    \texttt{join} \textit{compound} [\textit{options}\dots]
+    & When you have still broken compounds in frames after you have
+    used \texttt{unwrap}, this function can be used to join broken
+    compounds. Note, that this function is significantly slower than
+    \texttt{unwrap}!
+    & \pageref{sec:join}
+    \\\hline
+  
+    \texttt{box} [\textit{options}\dots]
+    & When you want to draw a box around the unit cell of your system,
+    this function can be used. The box will automatically adapt to
+    changes in the unit cell parameters in the course of a trajectory.
+    & \pageref{sec:box}
+    \\\hline
+  
+    \texttt{box\_draw} [\textit{options}\dots]
+    & When the unit cell parameters do not change in the course of a
+    trajectory, this function draws a static box that will not adapt to
+    changes in the unitcell properties.
+    & \pageref{sec:box_draw}
+    \\\hline
+  \end{tabular}
+\end{center}
 
-\newpage
+\section{Basic usage}
+All of the plugin's functions can be accessed via the Tcl text command
+
+\begin{Verbatim}
+  pbc \textrm{\textit{subcommand}} [\textrm{\textit{options}}]...
+\end{Verbatim}
+
+\noindent that you can write in a VMD-Tcl-script or interactively
+enter in the VMD console window or the VMD TkConsole (accessible via
+VMD Main Menu $\rightarrow$ Extensions $\rightarrow$ Tk Console).
+When no \textit{subcommand} is provided, a short help message will be
+printed.
+
 \section{Installation}
 
 Since VMD version 1.8.6, the \pbctools plugin is part of the official
@@ -69,81 +135,7 @@ package require pbctools
 %$
 \end{enumerate}
 
-\section{Basic usage and command summary}
-
-All of the plugin's functions can be accessed via the Tcl text command
-
-\begin{Verbatim}
-  pbc \textrm{\textit{subcommand}} [\textrm{\textit{options}}]...
-\end{Verbatim}
-
-\noindent that you can write in a VMD-Tcl-script or interactively
-enter in the VMD console window or the VMD TkConsole (accessible via
-VMD Main Menu $\rightarrow$ Extensions $\rightarrow$ Tk Console).
-When no \textit{subcommand} is provided, a short help message will be
-printed.
-
-The subcommands that can be used are summarized in table
-\ref{tab:subcommands}.
-
-\begin{table}[htb]
-  \centering
-  \begin{tabular}{|p{0.35\textwidth}|p{0.55\textwidth}|r|}
-    \hline
-    \textbf{Subcommand} & \textbf{Description} & \textbf{p.}\\\hline\hline
-
-    \mbox{\texttt{set} \textit{cell}} [\textit{options}\dots]
-    & Set the VMD unit cell properties. 
-    & \pageref{sec:set}
-    \\\hline
-
-    \mbox{\texttt{readxst} \textit{xstfile}} [\textit{options}\dots]
-    & Read the VMD unit cell properties from an XST file.
-    & \pageref{sec:readxst} 
-    \\\hline
-
-    \texttt{get} [\textit{options}\dots]
-    & Get the VMD unit cell properties. 
-    & \pageref{sec:get}
-    \\\hline
-
-    \texttt{wrap} [\textit{options}\dots]
-    & Wrap atoms into a single unit cell.
-    & \pageref{sec:wrap}
-    \\\hline
-
-    \texttt{unwrap} [\textit{options}\dots]
-    & Unwrap frames of a trajectory, so that no atoms are wrapped
-    between adjacent frames.
-    & \pageref{sec:unwrap}
-    \\\hline
-    
-    \texttt{join} \textit{compound} [\textit{options}\dots]
-    & Joins compounds (residues, chains, segments, or fragments) that
-    have been split due to wrapping around the unit cell boundaries,
-    so that they are not split anymore.
-    & \pageref{sec:join}
-    \\\hline
-    
-    \texttt{box} [\textit{options}\dots]
-    & (Re)Draws a box that shows the boundaries of the unit cell. The
-    box will automatically adapt to changes in the unit cell
-    parameters in the course of a trajectory.
-    & \pageref{sec:box}
-    \\\hline
-
-    \texttt{box\_draw} [\textit{options}\dots]
-    & Draws a static box that shows the boundaries of the unit cell,
-    but will not adapt to changes in the unitcell properties.
-    & \pageref{sec:box_draw}
-    \\\hline
-  \end{tabular}
-  \caption{Subcommands of the VMD-Tcl-command \texttt{pbc}.}
-  \label{tab:subcommands}
-\end{table}
-
-\cleardoublepage
-
+\newpage
 \section{\texttt{set} and \texttt{readxst} -- Setting the unitcell
   parameters}
 
@@ -606,6 +598,13 @@ pbc join res -ref "name CA"
 \texttt{-sel} \textit{sel}
 & The selection of atoms to be joined (default: \texttt{"all"}). Use
 this if you don't want to join all atoms.
+\\ \hline
+
+\texttt{-noborder}$|$\texttt{-border} \textit{depth}
+& When only atoms close to the boundaries of the unit cell have
+overstretched bonds, this option can be used to specify the maximal
+depth inside the system. Using this option will significantly speed up
+join (default: \texttt{-noborder}).
 \\ \hline
 
 \texttt{-noref}$|$\texttt{-ref} \textit{refsel}
