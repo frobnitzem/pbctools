@@ -1,3 +1,8 @@
+2009-06-26  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
+
+	* doc/pbctools.tex: Added note that -centersel only has an effect
+	when -center bb/com is used. Thanks to Alberto Sergio Saray.
+
 2009-05-14  Olaf Lenz  <olenz@qwghlm>
 
 	* pbctools.tcl: Applied Axel Kohlmeyer's docfix patch.
