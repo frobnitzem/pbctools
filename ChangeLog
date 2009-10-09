@@ -1,3 +1,9 @@
+2009-10-09  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
+
+	* doc/pbctools.tex (subsection{\texttt{set}}): Fixed small error
+	in the documentation of "pbc set", thanks to Axel Kohlmeier and
+	Lan He.
+
 2009-06-26  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
 
 	* doc/pbctools.tex: Added note that -centersel only has an effect
