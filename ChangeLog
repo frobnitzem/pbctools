@@ -1,3 +1,15 @@
+2009-11-04  Olaf Lenz  <olenz@qwghlm>
+
+	* pbcset.tcl: Incorporated Jan Saams commits to the VMD CVS, log
+	message:
+	Fixed a bug reported by Olaf Lenz:
+	> % pbc readxst kiley.xst -alignx
+	> atomselection move:: need a 4x4 matrix
+	Now xst files containing PBC vectors that don't follow the
+	standard alignment (A||x, B in x-y plane) are read and the
+	molecule is aligned accordingly when using -alignx option.
+	Fixed indentation in a few places.
+
 2009-10-09  Olaf Lenz  <lenzo@pckr97.mpip-mainz.mpg.de>
 
 	* doc/pbctools.tex (subsection{\texttt{set}}): Fixed small error
@@ -14,7 +26,7 @@
 	* pbctools.tcl: Applied Axel Kohlmeyer's docfix patch.
 
 	* doc/pbctools.tex: Restructured introduction, abstract and basic
-	usage section. 
+	usage section.
 
 	* pbcjoin.tcl (pbcjoin): Added option "-[no]border", which allows
 	to specify the maximal depth were atoms of a broken compound can

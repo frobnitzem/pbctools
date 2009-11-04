@@ -30,10 +30,10 @@ namespace eval ::PBCTools:: {
 	# Set the defaults
 	set molid "top"
 	set first "now"
-	set last "now"
+	set last  "now"
 	set format "vmd"
 	set alignx "0"
-
+	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
 	    set arg [ lindex $args $argnum ]
@@ -83,17 +83,15 @@ namespace eval ::PBCTools:: {
 	    } else {
 		# NAMD case
 		set res [pbc_namd2vmd $cellparams]
-		set cellparams [lrange $res 0 5]
-		if { [llength $res] > 6 } then {
-		    if { $alignx } then {
-			set namd_rot [lrange $res 6 8]
-		    } else {
-			error [concat "ERROR: pbcset: NAMD unit cell vector is not aligned to the x-axis!\n" \
-			       "Use \"-alignx\" to automatically rotate the system accordingly!" ]
-		    }
-		} else {
-		    set namd_rot 1
+		set namd_rot   [lindex $res 6]
+		if { !$alignx && [llength $namd_rot] } then {
+		    set angle [format "%.4f" [vecangle [lindex $cellparams 0] {1 0 0}]]
+		    set msg [concat "ERROR: pbcset: NAMD unit cell vector is not aligned to the x-axis!\n" \
+				 "Angle between A and x-axis = $angle deg.\n" \
+				 "Use \"-alignx\" to automatically rotate the system accordingly!" ]
+		    error $msg
 		}
+		set cellparams [lrange $res 0 5]
 	    }
 	    set single 1
 	} else {
@@ -117,49 +115,48 @@ namespace eval ::PBCTools:: {
 		} else {
 		    # NAMD format
 		    set res [pbc_namd2vmd $cell]
-		    set cell [lrange $res 0 5]
-		    if { [llength $res] > 6 } then {
-			if { $alignx } then {
-			    lappend namd_rot [list [lrange $res 6 8]]
-			} else {
-			    set msg \
-				[concat \
-				     "ERROR: pbcset: NAMD unit cell vector is not aligned to the x-axis!" \
-				     "Use \"-alignx\" to automatically rotate the system accordingly!" \
-				    ]
-			    error $msg
-			}
-		    } else {
-			lappend namd_rot 1
+		    if { !$alignx && [llength [lindex $res 6]] } then {
+			set angle [format "%.4f" [vecangle [lindex $cell 0] {1 0 0}]]
+			set msg \
+			    [concat \
+				 "ERROR: pbcset: NAMD unit cell vector is not aligned to the x-axis!\n" \
+				 "Angle between A and x-axis = $angle deg.\n" \
+				 "Use \"-alignx\" to automatically rotate the system accordingly!" \
+				]
+			error $msg
 		    }
-		    lset cellparams $i $cell
+
+		    lappend namd_rot [lindex $res 6]
+		    lset cellparams $i [lrange $res 0 5]
 		}
 	    }
 	    set single 0
 	}
 
+
+	set sel [atomselect $molid all]
 	# Set the cell parameters
 	for { set frame $first } { $frame <= $last } { incr frame } {
+	    $sel frame $frame
 	    if { $single } then {
 		set cell $cellparams
-		if { $alignx && $namd_rot != 1} then { 
-		    set sel [atomselect $molid all]
+		if { $alignx && [llength $namd_rot]} then { 
 		    $sel move $namd_rot
-		    $sel delete
 		}
 	    } else {
 		set i [expr $frame-$first]
 		set cell [lindex $cellparams $i]
-		if { $alignx } then { 
-		    set sel [atomselect $molid all]
-		    $sel move [lindex $namd_rot $i]
-		    $sel delete
+		set rot [lindex $namd_rot $i]
+		if { $alignx && [llength $rot] } then { 
+		    $sel move $rot
 		}
 	    }
 
 	    molinfo $molid set frame $frame
 	    molinfo $molid set { a b c alpha beta gamma } $cell
 	}
+	$sel delete
+
 	molinfo $molid set frame $frame_before
     }
 
@@ -327,58 +324,58 @@ namespace eval ::PBCTools:: {
 	close $fd
 
 	foreach line [split $data \n] {	    if {[string first \# $line]==-1 && [llength $line]>0} {
-		# The first line is omitted, because xst info starts at frame 0 
-		# while dcd record starts at frame 1.
-		if {$skipfirst && $numline==0} { 
-		    if {[llength $log]} { puts $log "Skipping first entry" }
-		    incr numline
-		    continue 
+	    # The first line is omitted, because xst info starts at frame 0 
+	    # while dcd record starts at frame 1.
+	    if {$skipfirst && $numline==0} { 
+		if {[llength $log]} { puts $log "Skipping first entry" }
+		incr numline
+		continue 
+	    }
+	    
+	    if {!($numline%$stride) && $frame<=$last} {
+		# Get the time
+		set oldtime $time;
+		set olddt $dt
+		set time [lrange $line 0 0]
+		# Get PBC vectors
+		set v1   [lrange $line 1 3]
+		set v2   [lrange $line 4 6]
+		set v3   [lrange $line 7 9]
+		set ori  [lrange $line 10 12]
+		set cell [list $v1 $v2 $v3 $ori]
+		
+		# Check if the number of timesteps per frame changed
+		set dt [expr {$time-$oldtime}];
+		if {!$numline==1 && $dt!=$olddt && [llength $log]} {
+		    puts $log "\nWARNING Stepsize in XST changed! dt=$dt, olddt=$olddt\n"
 		}
 		
-		if {!($numline%$stride) && $frame<=$last} {
-		    # Get the time
-		    set oldtime $time;
-		    set olddt $dt
-		    set time [lrange $line 0 0]
-		    # Get PBC vectors
-		    set v1   [lrange $line 1 3]
-		    set v2   [lrange $line 4 6]
-		    set v3   [lrange $line 7 9]
-		    set ori  [lrange $line 10 12]
-		    set cell [list $v1 $v2 $v3 $ori]
-		    
-		    # Check if the number of timesteps per frame changed
-		    set dt [expr {$time-$oldtime}];
-		    if {!$numline==1 && $dt!=$olddt && [llength $log]} {
-			puts $log "\nWARNING Stepsize in XST changed! dt=$dt, olddt=$olddt\n"
-		    }
-		    
-		    # if provided, use conversion factor for times > 0:
-		    if {$step2frame && $time} {
-			if {$stride != 1} {
-			    set effectiveframe [expr round( $time * $step2frame / $stride ) - 1]
-			} else {
-			    set effectiveframe [expr $time * $step2frame - 1]
-			}
+		# if provided, use conversion factor for times > 0:
+		if {$step2frame && $time} {
+		    if {$stride != 1} {
+			set effectiveframe [expr round( $time * $step2frame / $stride ) - 1]
 		    } else {
-			set effectiveframe $frame
+			set effectiveframe [expr $time * $step2frame - 1]
 		    }
-
-		    # Not nice: pbcset is called for every single frame. It
-		    # would be better to first assemble a list of frames
-		    # and then call pbcset once. However, the stride
-		    # between the effective frames might be > 1, therefore
-		    # this doesn't work.
-		    pbcset $cell -namd -molid $molid -first $effectiveframe -last $effectiveframe $alignx
-
-		    #DB vmdcon -info "time = $time / effectiveframe = $effectiveframe"
-		    if {[llength $log]} {
-			puts $log "pbcreadxst: $frame $time $cell"
-		    }
-		    incr frame
+		} else {
+		    set effectiveframe $frame
 		}
-		incr numline
+
+		# Not nice: pbcset is called for every single frame. It
+		# would be better to first assemble a list of frames
+		# and then call pbcset once. However, the stride
+		# between the effective frames might be > 1, therefore
+		# this doesn't work.
+		pbcset $cell -namd -molid $molid -first $effectiveframe -last $effectiveframe $alignx
+
+		#DB vmdcon -info "time = $time / effectiveframe = $effectiveframe"
+		if {[llength $log]} {
+		    puts $log "pbcreadxst: $frame $time $cell"
+		}
+		incr frame
 	    }
+	    incr numline
+	}
 	}
 	
 	molinfo $molid set frame $frame_before
@@ -506,9 +503,11 @@ namespace eval ::PBCTools:: {
 	set A [lindex $cell 0]
 	set B [lindex $cell 1]
 	set C [lindex $cell 2]
+	set rot {}
 
 	# In molinfo the length of the cell vectors and the angles between 
-	# them are saved. $a is assumed to point in x-direction.
+	# them are saved. $A is assumed to be parallel with the x-axis.
+	# If it isn't then we compute the rotation matrix
 	if {abs([vecdot [vecnorm $A] {1 0 0}]-1.0)>0.000001} {
 	    # Compute transformation matrix to rotate A into x-axis
 	    set rot [transvecinv $A]
@@ -535,11 +534,7 @@ namespace eval ::PBCTools:: {
 	set b [veclength $B]
 	set c [veclength $C]
 
-	if {[info exists rot]} then {
-	    return [list $a $b $c $alpha $beta $gamma $rot]
-	} else {
-	    return [list $a $b $c $alpha $beta $gamma]
-	}
+	return [list $a $b $c $alpha $beta $gamma $rot]
     }
 
 
