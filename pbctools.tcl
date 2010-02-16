@@ -5,7 +5,7 @@
 ##
 ## Authors: 
 ##   Jerome Henin <Jerome.Henin _at_ edam.uhp-nancy.fr>
-##   Olaf Lenz <olenz _at_ fias.uni-frankfurt.de>
+##   Olaf Lenz <olaf _at_ lenz.name>
 ##   Cameron Mura <cmura _at_ mccammon.ucsd.edu>
 ##   Jan Saam <saam _at_ charite.de>
 ##

@@ -1,4 +1,3 @@
-
 ############################################################
 #
 #    This file contains procedures to wrap atoms into the central
@@ -109,6 +108,7 @@ namespace eval ::PBCTools:: {
 	    "seg" -
 	    "segid" { set compound "segid" }
 	    "chain" { set compound "chain" }
+	    "fragment" { set compound "fragment" }
 	    default { 
 		error "error: pbcwrap: bad argument to -compound: $compound" 
 	    }
@@ -236,6 +236,7 @@ namespace eval ::PBCTools:: {
 		    $molid $A $B $C $origin $sel $wrapsel $draw
 	    }
 
+	    # print timestamp
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {
 		set percentage [format "%3.1f" [expr $fac*($frame-$first+1)]]
@@ -243,7 +244,8 @@ namespace eval ::PBCTools:: {
 		set next_time [expr $time + $show_step]
 	    }
 	}
-	
+
+	# print final timestamp
 	if  { $verbose } then {
 	    set percentage [format "%3.1f" 100]
 	    vmdcon -info "$percentage% complete (frame $frame)"
