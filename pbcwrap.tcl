@@ -25,7 +25,7 @@ namespace eval ::PBCTools:: {
     #   -now
     #   -parallelepiped|-orthorhombic
     #   -sel $sel
-    #   -nocompound|-compound res[idue]|seg[ment]|chain
+    #   -nocompound|-compound res[idue]|seg[ment]|chain|fragment
     #   -nocompundref|-compoundref $sel
     #   -center origin|unitcell|com|centerofmass|bb|boundingbox
     #   -centersel $sel
@@ -659,6 +659,61 @@ namespace eval ::PBCTools:: {
 	set xs [vecadd $xs [vecscale $Ax $shiftAs]]
 	
 	return [list $shiftAs $shiftBs $shiftCs]
+    }
+
+    # Return a list of lists of atom indices. The atoms in a sublist
+    # are all atoms that belong to a connected subset of $sel.
+    proc get_connected {bondlist} {
+	# recursive function that tags untagged atoms
+	# and returns a list of atoms connected to this one
+	proc grow_connected {pid} {
+	    upvar 1 "tagged" tagged "bonds" bonds
+	    if { ! [lindex $tagged $pid] } then {
+		# mark the atom
+		lset tagged $pid 1
+		# add it to the list
+		set res [list $pid]
+		foreach pid2 $bonds($pid) {
+		    foreach pid3 [grow_connected $pid2] {
+			lappend res $pid3
+		    }
+		}
+		return $res
+	    } else {
+		return {}
+	    }
+	}
+
+	# get the bond structure
+	set n [llength $bondlist]
+	
+	# put the bondlist into an array
+	set pid 0
+	foreach bs $bondlist {
+	    lappend tagged 0
+	    set bonds($pid) $bs
+	    incr pid
+	}
+
+	# make links bidirectional
+	set pid 0
+	foreach bs $bondlist {
+	    foreach pid2 $bs { lappend bonds($pid2) $pid }
+	    incr pid
+	}
+
+	# remove duplicate links
+	for { set pid 0 } { $pid < $n } { incr pid } {
+	    set bonds($pid) [lsort -unique -integer $bonds($pid) ]
+	}
+	
+	# grow connected structures recursively
+	for { set pid 0 } { $pid < $n } { incr pid } {
+	    if { ! [lindex $tagged $pid] } then {
+		lappend connected [lsort -integer [grow_connected $pid]]
+	    }
+	}
+	return $connected
     }
 }
 

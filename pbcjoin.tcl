@@ -17,7 +17,7 @@ namespace eval ::PBCTools:: {
     #   Joins compounds of type $compound of atoms that have been
     # split due to wrapping around the unit cell boundaries, so that
     # they are not split anymore. $compound must be one of the values
-    # "residue", "chain", "segment" or "fragment".
+    # "residue", "chain", "segment", "fragment" or "connected".
     # 
     # OPTIONS:
     #   -molid $molid|top
@@ -59,10 +59,14 @@ namespace eval ::PBCTools:: {
 		set compoundtype "chain" 
 		set compoundseltext "chain %s"
 	    }
-	    "bonded" -
 	    "fragment" { 
 		set compoundtype "fragment" 
 		set compoundseltext "fragment %s"
+	    }
+	    "bonded" -
+	    "connected" {
+		set compoundtype "connected"
+		set compoundseltext "index %s"
 	    }
 	    default { error "ERROR: pbcjoin: unknown compound type $compoundtype" }
 	}
@@ -142,10 +146,31 @@ namespace eval ::PBCTools:: {
 	    # create a list of all compounds in sel: these compounds need to be tested
 	    set compoundlist {}
 	    switch -- $compoundtype {
-		"segid" { set compoundlist [lsort -unique [$sel get segid]] }
-		"residue" { set compoundlist [lsort -integer -unique [$sel get residue]] }
-		"chain" { set compoundlist [lsort -unique [$sel get chain]] }
-		"fragment" { set compoundlist [lsort -unique [$sel get fragment]] }
+		"segid" { 
+		    foreach segid [lsort -unique [$sel get segid]] { 
+			lappend compoundlist "segid $segid" 
+		    }
+		}
+		"residue" { 
+		    foreach resid [lsort -integer -unique [$sel get residue]] {
+			lappend compoundlist "residue $resid"
+		    }
+		}
+		"chain" { 
+		    foreach chain [lsort -integer -unique [$sel get chain]] {
+			lappend compoundlist "chain $chain"
+		    }
+		}
+		"fragment" { 
+		    foreach fragment [lsort -integer -unique [$sel get fragment]] {
+			lappend compoundlist "fragment $fragment"
+		    }
+		}
+		"connected" {
+		    foreach connpids [get_connected [$sel getbonds]] {
+			lappend compoundlist "index $connpids"
+		    }
+		}
 	    }
 	    $sel delete
 
@@ -176,49 +201,53 @@ namespace eval ::PBCTools:: {
 
 	    set compoundcnt 0
 	    # loop over all compounds
-	    foreach compoundid $compoundlist {
+	    foreach compoundtxt $compoundlist {
 		# select the next compound
-		set compound [atomselect $molid [format $compoundseltext $compoundid] frame $frame]
+		set compound [atomselect $molid $compoundtxt frame $frame]
 
-		# now test whether the compound needs to be joined
-		set minmax [measure minmax $compound]
+		# test whether it really has more than one atom
+		if { [$compound num] > 2 } then {
+		    # now test whether the compound needs to be joined
+		    set minmax [measure minmax $compound]
 
-		set d [vecsub [lindex $minmax 1] [lindex $minmax 0]]
-		set dx [lindex $d 0]
-		set dy [lindex $d 1]
-		set dz [lindex $d 2]
-		if { $dx > $a || $dy > $b || $dz > $c } then {
-		    set x [$compound get x]
-		    set y [$compound get y]
-		    set z [$compound get z]
+		    set d [vecsub [lindex $minmax 1] [lindex $minmax 0]]
+		    set dx [lindex $d 0]
+		    set dy [lindex $d 1]
+		    set dz [lindex $d 2]
+		    if { $dx > $a || $dy > $b || $dz > $c } then {
+			set pid [$compound get index]
+			set x [$compound get x]
+			set y [$compound get y]
+			set z [$compound get z]
 
-		    if { $ref ne "all" } then {
-			# get the coordinates of the reference atom in the compound
-			set refsel [atomselect $molid [format "$compoundseltext and ($ref)" $compoundid] frame $frame]
-			set r [lindex [$refsel get { x y z }] 0]
-			$refsel delete
-			set rx [lindex $r 0]
-			set ry [lindex $r 1]
-			set rz [lindex $r 2]
-		    } else {
-			# otherwise get the first atom in the compound
-			set rx [lindex $x 0]
-			set ry [lindex $y 0]
-			set rz [lindex $z 0]
+			if { $ref ne "all" } then {
+			    # get the coordinates of the reference atom in the compound
+			    set refsel [atomselect $molid "$compoundtxt and ($ref)" frame $frame]
+			    set r [lindex [$refsel get { x y z }] 0]
+			    $refsel delete
+			    set rx [lindex $r 0]
+			    set ry [lindex $r 1]
+			    set rz [lindex $r 2]
+			} else {
+			    # otherwise get the first atom in the compound
+			    set rx [lindex $x 0]
+			    set ry [lindex $y 0]
+			    set rz [lindex $z 0]
+			}
+
+			# append the coordinates of the compounds atoms
+			# and its reference atom to the result list
+			foreach pidv $pid xv $x yv $y zv $z {
+			    lappend pids $pidv
+			    lappend xs $xv
+			    lappend ys $yv
+			    lappend zs $zv
+			    lappend rxs $rx
+			    lappend rys $ry
+			    lappend rzs $rz
+			}
+
 		    }
-
-		    # append the coordinates of the compounds atoms
-		    # and its reference atom to the result list
-		    lappend joincompounds $compoundid
-		    foreach xv $x yv $y zv $z {
-			lappend xs $xv
-			lappend ys $yv
-			lappend zs $zv
-			lappend rxs $rx
-			lappend rys $ry
-			lappend rzs $rz
-		    }
-
 		}
 		$compound delete
 
@@ -239,14 +268,13 @@ namespace eval ::PBCTools:: {
 		incr compoundcnt
 		incr totalcnt
 	    } 
-	    # END foreach compound $compoundlist
+	    # END foreach compoundtxt $compoundlist
 
 	    if { $verbose } then {
-		vmdcon -info "Joining [llength $joincompounds] compounds."
+		vmdcon -info "Wrapping [llength $pids] atoms."
 	    }
-	    if { [llength $joincompounds] > 0 } then {
-
-		set joinsel [atomselect $molid [format $compoundseltext $joincompounds] frame $frame]
+	    if { [llength $pids] > 0 } then {
+		set joinsel [atomselect $molid [format "index %s" $pids] frame $frame]
 
 		# wrap the coordinates
 		pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
@@ -264,7 +292,7 @@ namespace eval ::PBCTools:: {
 
 	if {$verbose} then {
 	    set percentage 100
-	    vmdcon -info "100.0% complete (frame $frame, compoundid $compoundid)"
+	    vmdcon -info "100.0% complete (frame $frame, compound $compoundtxt)"
 	}
 
 	# Rewind to original frame

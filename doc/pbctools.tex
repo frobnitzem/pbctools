@@ -395,7 +395,7 @@ changed (default: \texttt{-parallelepiped}).
 this if you don't want to wrap all atoms.
 \\ \hline
 
-\texttt{-nocompound}\linebreak $|$\texttt{-compound} \texttt{res}[\texttt{id}[\texttt{ue}]]$|$\texttt{seg}[\texttt{id}]$|$\texttt{chain}
+\texttt{-nocompound}\linebreak $|$\texttt{-compound} \texttt{res}[\texttt{id}[\texttt{ue}]]$|$\texttt{seg}[\texttt{id}]$|$\texttt{chain}$|$\texttt{fragment}
 & Defines, which atom compounds should be kept together, \ie which
 atoms will not be wrapped if a compound would be split by the
 wrapping: residues, segments or chains (default:
@@ -550,19 +550,22 @@ this if you don't want to unwrap all atoms.
 Joins compounds of type \textit{compound} of atoms that have been
 split due to wrapping around the unit cell boundaries, so that they
 are not split anymore. \textit{compound} must be one of the values
-\texttt{res[id[ue]]}, \texttt{chain}, \texttt{seg[id]} or
-\texttt{fragment}.
+\texttt{res[id[ue]]}, \texttt{chain}, \texttt{seg[id]},
+\texttt{fragment} or \texttt{connected}.
 
 This procedure can help to remove bonds that stretch the whole box.
 Note, however, that \texttt{join} is relatively slow and is required
-only in a very few cases.  If you have a simulation trajectory that
-contains frames with overstretched bonds, it is usually enough to
-apply \texttt{join} only to the first frame and then the much faster
+only in few cases.  If you have a simulation trajectory that contains
+frames with overstretched bonds, it is usually enough to apply
+\texttt{join} only to the first frame and then the much faster
 procedure \texttt{unwrap} to all of the frames:
 \begin{Verbatim}
   pbc join \textit{compound} -first 0 -last 0 
   pbc unwrap
 \end{Verbatim}
+
+Note also, that the function only works when none of the compounds
+stretches more than half the periodic box in any direction.
 
 \minisec{Example}
 
