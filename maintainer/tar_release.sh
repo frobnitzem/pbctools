@@ -15,4 +15,4 @@ fi
 ARCHNAME=$(basename $NAME)
 
 echo "Creating archive $ARCHNAME.tar.gz..."
-tar -chzvf $ARCHNAME.tar.gz $NAME --exclude=.svn* --exclude=maintainer
+tar -chzvf $ARCHNAME.tar.gz $NAME --exclude=.git* --exclude=maintainer

@@ -191,7 +191,7 @@ namespace eval ::PBCTools:: {
 	    set b [expr 0.5 * [lindex $cell 1]]
 	    set c [expr 0.5 * [lindex $cell 2]]
 
-	    set joincompounds {}
+	    set pids {}
 	    set xs {}
 	    set ys {}
 	    set zs {}
