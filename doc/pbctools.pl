@@ -32,7 +32,7 @@ it comes with the current development version of VMD, and it may
 therefore not match the plugin version you are using. If you want to
 find the documentation of a specific version of the plugin, please
 refer to the <a
-href="http://www.espresso-pp.de/frs/?group_id=11">PBCTools development
+href="http://github.com/olenz/pbctools/downloads">PBCTools development
 page</a>.
 </p>
 
