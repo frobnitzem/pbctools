@@ -1,24 +1,25 @@
 **************************************************
 ************* Notes for pbctools *****************
 **************************************************
+Time-stamp: <2010-09-21 14:32 olenz>
 
 Bump version number:
-> cd pbctools/trunk
 > perl maintainer/bump_version.pl <VERSION>
 
 Tag relase:
-> cd pbctools
-> svn copy \
-  http://www.espresso-pp.de/svn/pbctools/trunk \
-  http://www.espresso-pp.de/svn/pbctools/tags/pbctools-<VERSION>
-> svn update
+> git tag vX.Y
+> git push origin vX.Y
+
+Branch release:
+> git branch branch-X.Y
+> git push origin branch-X.Y
 
 Tar release:
 > cd pbctools/tags
 > tar_release.sh <DIR-NAME>
 
 Build docs:
-> cd pbctools/trunk/doc
+> cd doc
 > make
 
 
