@@ -230,6 +230,7 @@ namespace eval ::PBCTools:: {
     # OPTIONS:
     #   -on|off|toggle
     #   -color $color
+    #   -material $material
     # 
     # All options from the pbcbox_draw procedure can be used.
     #
@@ -241,6 +242,7 @@ namespace eval ::PBCTools:: {
 	# call, and the color
 	variable pbcbox_gids 
 	variable pbcbox_color 
+	variable pbcbox_material
 	variable pbcbox_args
 	variable pbcbox_state
 
@@ -248,6 +250,7 @@ namespace eval ::PBCTools:: {
 	set molid "top"
 	set state "on"
 	set color "blue"
+	set material "opaque"
 
 	# Parse options
 	set pass_args ""
@@ -257,6 +260,7 @@ namespace eval ::PBCTools:: {
 	    switch -- $arg {
 		"-molid"      { set molid $val; incr argnum }
 		"-color"      { set color $val; incr argnum }
+		"-material"   { set material $val; incr argnum }
 		"-off"        { set state 0 }
 		"-on"         { set state 1 }
 		"-toggle"     { set state "toggle" }
@@ -273,6 +277,7 @@ namespace eval ::PBCTools:: {
 	}
 
 	set pbcbox_color($molid) $color
+	set pbcbox_material($molid) $material
 	set pbcbox_args($molid) "$pass_args"
 
 	if { $oldstate && !$state } then {
@@ -305,7 +310,9 @@ namespace eval ::PBCTools:: {
 	variable pbcbox_gids 
 	variable pbcbox_args 
 	variable pbcbox_color
+	variable pbcbox_material
 	set box_color_gid [graphics $molid color $pbcbox_color($molid)]
+	set box_material_gid [graphics $molid material $pbcbox_material($molid)]
 	if {[catch {set pbcbox_gids($molid) \
 			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid)" ] \
 		    } errMsg] == 1 } then {
@@ -313,6 +320,7 @@ namespace eval ::PBCTools:: {
 	    error $errMsg
 	}
 	lappend pbcbox_gid($molid) $box_color_gid
+	lappend pbcbox_gid($molid) $box_material_gid
     }
 
     # delete the periodic box and remove the gids
