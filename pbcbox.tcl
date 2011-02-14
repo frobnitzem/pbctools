@@ -11,7 +11,7 @@
 # $Id$
 #
 
-package provide pbctools 2.5
+package provide pbctools 2.6
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -44,6 +44,8 @@ namespace eval ::PBCTools:: {
 	set shiftcenterrel {}
 	set width 3
 	set resolution 8
+	set color "blue"
+	set material "Opaque"
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
@@ -59,6 +61,8 @@ namespace eval ::PBCTools:: {
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-style"      { set style $val; incr argnum }
+		"-color"      { set color $val; incr argnum }
+		"-material"   { set material $val; incr argnum }
 		"-width"      { set width $val; incr argnum }
 		"-resolution" { set resolution $val; incr argnum }
 		default { error "error: pbcbox: unknown option: $arg" }
@@ -174,6 +178,8 @@ namespace eval ::PBCTools:: {
 	set vert(7) [vecadd $origin $A $B $C]
 
 	set gid {}
+	lappend gid [graphics $molid color $color]
+	lappend gid [graphics $molid material $material]
 	switch $style {
 	    tubes {
 		# set size and radius of spheres and cylinders 
@@ -230,6 +236,7 @@ namespace eval ::PBCTools:: {
     # OPTIONS:
     #   -on|off|toggle
     #   -color $color
+    #   -material $material
     # 
     # All options from the pbcbox_draw procedure can be used.
     #
@@ -241,6 +248,7 @@ namespace eval ::PBCTools:: {
 	# call, and the color
 	variable pbcbox_gids 
 	variable pbcbox_color 
+	variable pbcbox_material
 	variable pbcbox_args
 	variable pbcbox_state
 
@@ -248,6 +256,7 @@ namespace eval ::PBCTools:: {
 	set molid "top"
 	set state "on"
 	set color "blue"
+	set material "Opaque"
 
 	# Parse options
 	set pass_args ""
@@ -257,6 +266,7 @@ namespace eval ::PBCTools:: {
 	    switch -- $arg {
 		"-molid"      { set molid $val; incr argnum }
 		"-color"      { set color $val; incr argnum }
+		"-material"   { set material $val; incr argnum }
 		"-off"        { set state 0 }
 		"-on"         { set state 1 }
 		"-toggle"     { set state "toggle" }
@@ -273,6 +283,7 @@ namespace eval ::PBCTools:: {
 	}
 
 	set pbcbox_color($molid) $color
+	set pbcbox_material($molid) $material
 	set pbcbox_args($molid) "$pass_args"
 
 	if { $oldstate && !$state } then {
@@ -305,9 +316,9 @@ namespace eval ::PBCTools:: {
 	variable pbcbox_gids 
 	variable pbcbox_args 
 	variable pbcbox_color
-	graphics $molid color $pbcbox_color($molid)
+	variable pbcbox_material
 	if {[catch {set pbcbox_gids($molid) \
-			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid)" ] \
+			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid) -color $pbcbox_color($molid) -material $pbcbox_material($molid)" ] \
 		    } errMsg] == 1 } then {
 	    array unset pbcbox_gids $molid
 	    error $errMsg

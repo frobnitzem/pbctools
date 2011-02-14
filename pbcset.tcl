@@ -6,7 +6,7 @@
 # $Id$
 #
 
-package provide pbctools 2.5
+package provide pbctools 2.6
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -33,6 +33,7 @@ namespace eval ::PBCTools:: {
 	set last  "now"
 	set format "vmd"
 	set alignx "0"
+	set namd_rot {}
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {

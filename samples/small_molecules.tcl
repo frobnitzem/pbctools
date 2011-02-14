@@ -1,4 +1,5 @@
-mol load psf small_molecules.psf pdb small_molecules.pdb
+mol new small_molecules.psf waitfor all
+mol addfile small_molecules.pdb waitfor all
 
 mol modstyle 0 0 lines
 mol modcolor 0 0 SegName

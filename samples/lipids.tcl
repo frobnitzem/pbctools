@@ -1,5 +1,5 @@
 # Non-orthogonal system with varying unit cell parameters
-mol load vtf lipids.vtf
+mol new lipids.vtf waitfor all
 
 # Draw the box
 pbc wrap -orthorhombic -all -verbose -center com -centersel "residue 146" -compound res
