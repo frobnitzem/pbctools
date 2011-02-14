@@ -28,6 +28,7 @@ namespace eval ::PBCTools:: {
     #   -sel $sel
     #   -noborder|-border $depth
     #   -noref|-ref $sel
+    #   -nobondlist|-bondlist
     #   -[no]verbose
     #
     # AUTHOR: Olaf
@@ -40,6 +41,7 @@ namespace eval ::PBCTools:: {
 	set seltext "all"
 	set border 0
 	set ref "all"
+	set bondlist 0
 	set verbose 0
 
 	# Normalize compoundtype
@@ -87,6 +89,8 @@ namespace eval ::PBCTools:: {
 		"-noborder" { set border 0 }
 		"-ref" { set ref $val; incr argnum }
 		"-noref" { set ref "all" }
+		"-bondlist" { set bondlist 1 }
+		"-nobondlist" { set bondlist 0 }
 		"-verbose" { set verbose 1 }
 		"-noverbose" { set verbose 0 }
 		default { error "pbcjoin: unknown option: $arg" }
@@ -207,19 +211,57 @@ namespace eval ::PBCTools:: {
 
 		# test whether it really has more than one atom
 		if { [$compound num] > 2 } then {
-		    # now test whether the compound needs to be joined
-		    set minmax [measure minmax $compound]
 
-		    set d [vecsub [lindex $minmax 1] [lindex $minmax 0]]
-		    set dx [lindex $d 0]
-		    set dy [lindex $d 1]
-		    set dz [lindex $d 2]
-		    if { $dx > $a || $dy > $b || $dz > $c } then {
-			set pid [$compound get index]
-			set x [$compound get x]
-			set y [$compound get y]
-			set z [$compound get z]
+		    # use fast algorithm for molecules that are small
+		    if { !$bondlist } {
+			# now test whether the compound needs to be joined
+			set minmax [measure minmax $compound]
 
+			set d [vecsub [lindex $minmax 1] [lindex $minmax 0]]
+			set dx [lindex $d 0]
+			set dy [lindex $d 1]
+			set dz [lindex $d 2]
+			if { $dx > $a || $dy > $b || $dz > $c } then {
+			    set pid [$compound get index]
+			    set x [$compound get x]
+			    set y [$compound get y]
+			    set z [$compound get z]
+
+			    if { $ref ne "all" } then {
+				# get the coordinates of the reference atom in the compound
+				set refsel [atomselect $molid "$compoundtxt and ($ref)" frame $frame]
+				set r [lindex [$refsel get { x y z }] 0]
+				$refsel delete
+				set rx [lindex $r 0]
+				set ry [lindex $r 1]
+				set rz [lindex $r 2]
+			    } else {
+				# otherwise get the first atom in the compound
+				set rx [lindex $x 0]
+				set ry [lindex $y 0]
+				set rz [lindex $z 0]
+			    }
+
+			    # append the coordinates of the compounds atoms
+			    # and its reference atom to the result list
+			    foreach pidv $pid xv $x yv $y zv $z {
+				lappend pids $pidv
+				lappend xs $xv
+				lappend ys $yv
+				lappend zs $zv
+				lappend rxs $rx
+				lappend rys $ry
+				lappend rzs $rz
+			    }
+
+			}
+		    } else {
+			# use slow algorithm walking the bond list
+			set atmmap [$compound list]         ;# list of atom indices used for mapping
+			set atmcrd [$compound get {x y z}]  ;# all coordinates of selected atoms.
+			set bndmap [$compound getbonds]     ;# list of all bonds for selected atoms
+
+			# wrap first atom wrt. reference, iff needed.
 			if { $ref ne "all" } then {
 			    # get the coordinates of the reference atom in the compound
 			    set refsel [atomselect $molid "$compoundtxt and ($ref)" frame $frame]
@@ -228,25 +270,57 @@ namespace eval ::PBCTools:: {
 			    set rx [lindex $r 0]
 			    set ry [lindex $r 1]
 			    set rz [lindex $r 2]
-			} else {
-			    # otherwise get the first atom in the compound
-			    set rx [lindex $x 0]
-			    set ry [lindex $y 0]
-			    set rz [lindex $z 0]
-			}
 
-			# append the coordinates of the compounds atoms
-			# and its reference atom to the result list
-			foreach pidv $pid xv $x yv $y zv $z {
-			    lappend pids $pidv
-			    lappend xs $xv
-			    lappend ys $yv
-			    lappend zs $zv
+			    lappend xs [lindex $atmcrd 0 0]
+			    lappend ys [lindex $atmcrd 0 1]
+			    lappend zs [lindex $atmcrd 0 2]
 			    lappend rxs $rx
 			    lappend rys $ry
 			    lappend rzs $rz
+			    pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
+			    set atmcrd [lreplace $atmcrd 0 0 [list [lindex $xs 0] \
+								   [lindex $ys 0] \
+								   [lindex $zs 0]]]
 			}
 
+			# loop over all atoms in compound
+			foreach atm $atmmap {
+
+			    # lookup bonds
+			    set aidx  [lsearch -integer -sorted $atmmap $atm]
+			    set bonds [lindex $bndmap $aidx]
+
+			    set idx {}
+			    set xs {}
+			    set ys {}
+			    set zs {}
+			    set rxs {}
+			    set rys {}
+			    set rzs {}
+			    foreach bnd $bonds {
+				# handle atoms only once
+				if { $atm > $bnd } continue
+				# only join bonds within the same compound
+				if { [lsearch -integer -sorted $atmmap $bnd] < 0 } continue
+
+				set bidx [lsearch -integer -sorted $atmmap $bnd]
+				lappend idx $bidx
+				lappend xs [lindex $atmcrd $bidx 0]
+				lappend ys [lindex $atmcrd $bidx 1]
+				lappend zs [lindex $atmcrd $bidx 2]
+				lappend rxs [lindex $atmcrd $aidx 0]
+				lappend rys [lindex $atmcrd $aidx 1]
+				lappend rzs [lindex $atmcrd $aidx 2]
+			    }
+			    if { [llength $idx] > 0 } {
+				pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
+				foreach i $idx x $xs y $ys z $zs {
+				    set atmcrd [lreplace $atmcrd $i $i [list $x $y $z]]
+				}
+			    }
+			}
+			# update coordinates from temporary list.
+			$compound set {x y z} $atmcrd
 		    }
 		}
 		$compound delete
@@ -270,23 +344,25 @@ namespace eval ::PBCTools:: {
 	    } 
 	    # END foreach compoundtxt $compoundlist
 
-	    if { $verbose } then {
-		vmdcon -info "Wrapping [llength $pids] atoms."
+	    # wrapping only needed for the fast algorithm
+	    if { !$bondlist } {
+		if { $verbose } then {
+		    vmdcon -info "Wrapping [llength $pids] atoms."
+		}
+		if { [llength $pids] > 0 } then {
+		    set joinsel [atomselect $molid [format "index %s" $pids] frame $frame]
+
+		    # wrap the coordinates
+		    pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
+
+		    # set the new coordinates
+		    $joinsel set x $xs
+		    $joinsel set y $ys
+		    $joinsel set z $zs
+
+		    $joinsel delete
+		}
 	    }
-	    if { [llength $pids] > 0 } then {
-		set joinsel [atomselect $molid [format "index %s" $pids] frame $frame]
-
-		# wrap the coordinates
-		pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
-
-		# set the new coordinates
-		$joinsel set x $xs
-		$joinsel set y $ys
-		$joinsel set z $zs
-
-		$joinsel delete
-	    }
-
 	    incr framecnt
 	}
 
