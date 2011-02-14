@@ -44,6 +44,8 @@ namespace eval ::PBCTools:: {
 	set shiftcenterrel {}
 	set width 3
 	set resolution 8
+	set color "blue"
+	set material "Opaque"
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
@@ -59,8 +61,10 @@ namespace eval ::PBCTools:: {
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-style"      { set style $val; incr argnum }
+		"-color"      { set color $val; incr argnum }
+		"-material"   { set material $val; incr argnum }
 		"-width"      { set width $val; incr argnum }
-		"-resolution" { set resolution $val }
+		"-resolution" { set resolution $val ; incr argnum }
 		default { error "error: pbcbox: unknown option: $arg" }
 	    }
 	}
@@ -174,6 +178,8 @@ namespace eval ::PBCTools:: {
 	set vert(7) [vecadd $origin $A $B $C]
 
 	set gid {}
+	lappend gid [graphics $molid color $color]
+	lappend gid [graphics $molid material $material]
 	switch $style {
 	    tubes {
 		# set size and radius of spheres and cylinders 
@@ -311,16 +317,12 @@ namespace eval ::PBCTools:: {
 	variable pbcbox_args 
 	variable pbcbox_color
 	variable pbcbox_material
-	set box_color_gid [graphics $molid color $pbcbox_color($molid)]
-	set box_material_gid [graphics $molid material $pbcbox_material($molid)]
 	if {[catch {set pbcbox_gids($molid) \
-			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid)" ] \
+			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid) -color $pbcbox_color($molid) -material $pbcbox_material($molid)" ] \
 		    } errMsg] == 1 } then {
 	    array unset pbcbox_gids $molid
 	    error $errMsg
 	}
-	lappend pbcbox_gid($molid) $box_color_gid
-	lappend pbcbox_gid($molid) $box_material_gid
     }
 
     # delete the periodic box and remove the gids
