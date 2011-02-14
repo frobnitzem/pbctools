@@ -1,11 +1,11 @@
 ##
-## PBC Tools 2.0
+## PBC Tools
 ##
 ## A plugin for the handling of periodic boundary conditions.
 ##
 ## Authors: 
 ##   Jerome Henin <Jerome.Henin _at_ edam.uhp-nancy.fr>
-##   Olaf Lenz <olaf _at_ lenz.name>
+##   Olaf Lenz <olenz _at_ icp.uni-stuttgart.de>
 ##   Cameron Mura <cmura _at_ mccammon.ucsd.edu>
 ##   Jan Saam <saam _at_ charite.de>
 ##

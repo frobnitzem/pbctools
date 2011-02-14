@@ -60,7 +60,7 @@ namespace eval ::PBCTools:: {
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
 		"-style"      { set style $val; incr argnum }
 		"-width"      { set width $val; incr argnum }
-		"-resolution" { set resolution $val }
+		"-resolution" { set resolution $val; incr argnum }
 		default { error "error: pbcbox: unknown option: $arg" }
 	    }
 	}
