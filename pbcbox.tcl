@@ -250,7 +250,7 @@ namespace eval ::PBCTools:: {
 	set molid "top"
 	set state "on"
 	set color "blue"
-	set material "opaque"
+	set material "Opaque"
 
 	# Parse options
 	set pass_args ""
