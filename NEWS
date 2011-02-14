@@ -2,6 +2,10 @@ Changes in v2.6
 ---------------
 
 * Added option "pbc join connected".
+* Added a "-material" flag to "pbc box"
+* Added a "-bondlist|-nobondlist" flag of "pbc join"
+  that selected and alternate, bond-topology based 
+  algorithm, that works better with long chains.
 
 Changes in v2.5
 ---------------
