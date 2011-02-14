@@ -33,6 +33,7 @@ namespace eval ::PBCTools:: {
 	set last  "now"
 	set format "vmd"
 	set alignx "0"
+	set namd_rot {}
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
