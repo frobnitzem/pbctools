@@ -537,8 +537,8 @@ this if you don't want to unwrap all atoms.
 
 
 \newpage
-\section{\texttt{join} -- Joining residues, chains, segments and
-  fragments}
+\section{\texttt{join} -- Joining residues, chains, segments, fragments,
+  and connected/bonded groups}
 \label{sec:join}
 
 \minisec{Syntax}
@@ -564,15 +564,23 @@ procedure \texttt{unwrap} to all of the frames:
   pbc unwrap
 \end{Verbatim}
 
-Note also, that the function only works when none of the compounds
-stretches more than half the periodic box in any direction.
+Note also, that the (faster) default algorithm only works when none of
+the compounds stretches more than half the periodic box in any direction.
+With the option \texttt{-bondlist} you can select an alternate algorithm
+that joins compounds based on direct bonds and does not suffer from this
+limitation, but can be significantly slower.
 
-\minisec{Example}
+\minisec{Examples:}
 
 \begin{Verbatim}
 # join all residues such that the Carbon alpha atom 
 # is in the central image
 pbc join res -ref "name CA"
+\end{Verbatim}
+
+\begin{Verbatim}
+# join all bonds of long polymer chain molecules
+pbc join fragment -bondlist
 \end{Verbatim}
 
 \minisec{Options}
@@ -618,6 +626,11 @@ the first atom matching the selection in each compound will be chosen,
 and all atoms will be wrapped into a unit cell around this atom. If
 \texttt{noref} is used, the first atom in the compound is the
 reference atom (default: \texttt{-noref}).
+\\ \hline
+
+\texttt{-}[\texttt{no}]\texttt{bondlist}
+& Turn on/off alternate, bond topology based joining algorithm (default:
+\texttt{-nobondlist}).
 \\ \hline
 
 \texttt{-}[\texttt{no}]\texttt{verbose}
@@ -671,6 +684,10 @@ orthorhombic box. (default: \texttt{-parallelepiped}).
 
 \texttt{-color} \textit{color}
 & Draw the box in color \textit{color}. (default: \texttt{blue})
+\\ \hline
+
+\texttt{-material} \textit{Material}
+& Draw the box using the material \textit{Material}. (default: \texttt{Opaque})
 \\ \hline
 
 
