@@ -305,13 +305,14 @@ namespace eval ::PBCTools:: {
 	variable pbcbox_gids 
 	variable pbcbox_args 
 	variable pbcbox_color
-	graphics $molid color $pbcbox_color($molid)
+	set box_color_gid [graphics $molid color $pbcbox_color($molid)]
 	if {[catch {set pbcbox_gids($molid) \
 			[ eval "::PBCTools::pbcbox_draw -molid $molid $pbcbox_args($molid)" ] \
 		    } errMsg] == 1 } then {
 	    array unset pbcbox_gids $molid
 	    error $errMsg
 	}
+	lappend pbcbox_gid($molid) $box_color_gid
     }
 
     # delete the periodic box and remove the gids
