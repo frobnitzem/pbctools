@@ -1,5 +1,6 @@
 # Simple water box example
-mol load psf water.psf dcd water.dcd
+mol new water.psf waitfor all
+mol addfile water.dcd waitfor all
 
 pbc box
 pbc wrap -all -compound res
