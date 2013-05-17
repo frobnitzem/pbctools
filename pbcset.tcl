@@ -382,7 +382,42 @@ namespace eval ::PBCTools:: {
 	molinfo $molid set frame $frame_before
     }
 
-
+    #####################################################
+    # 
+    # pbcwritexst $file
+    #
+    # AUTHORS: Jan, Cameron
+    #
+    # Note that the origin will be discarded and values < 1e4 will be
+    # rounded to zero. 
+    #
+    # AUTHOR: Toni
+    #
+    proc pbcwritexst {xstfile} {
+        set ts 0
+        set ch [open $xstfile w]
+        puts $ch "# NAMD extended system trajectory file"
+        puts $ch "#\$LABELS step a_x a_y a_z b_x b_y b_z c_x c_y c_z o_x o_y o_z"
+        foreach box [pbc get -namd -all] {
+            set box_f  [concat {*}$box];  # flatten
+            set box_str ""
+            set column 0
+            foreach v $box_f {
+                set box_str "$box_str [format %8.4f $v]"
+                incr column
+                if {$column==3 || $column==6} {
+                    set box_str "$box_str    "; # Separate vectors
+                }
+            }
+            #  %f truncates ~epsilons
+            set ts_str [format %-8d $ts]
+            puts $ch "$ts_str $box_str    0.000 0.000 0.000"
+            incr ts
+        }
+        close $ch
+    }
+    
+    
     ###################################################################
     #
     # pbc_vmd2namd a b c [ alpha beta gamma ]

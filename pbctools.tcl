@@ -4,6 +4,7 @@
 ## A plugin for the handling of periodic boundary conditions.
 ##
 ## Authors: 
+##   Toni Giorgino <toni.giorgino _at_ isib.cnr.it>
 ##   Jerome Henin <Jerome.Henin _at_ edam.uhp-nancy.fr>
 ##   Olaf Lenz <olenz _at_ icp.uni-stuttgart.de>
 ##   Cameron Mura <cmura _at_ mccammon.ucsd.edu>
@@ -14,7 +15,7 @@
 ##
 ## $Id$
 ##
-package provide pbctools 2.6
+package provide pbctools 2.7
 
 ###################################################
 # Main namespace procedures
@@ -27,7 +28,10 @@ proc pbc { args } {
 	Setting/getting PBC information:
 	  set cell [options...]
 	  get [options...]
+
+        Reading/writing an XST file:
 	  readxst $xstfile [options...]
+          writexst $xstfile
 	
 	Drawing a box:
 	  box [options...]
