@@ -1,3 +1,9 @@
+2013-05-17   Olaf Lenz
+
+	* ChangeLog: This ChangeLog is discontinued. If you are interested
+	in the history of pbctools, refer either to NEWS or to the git
+	log.
+
 2010-04-26  Olaf Lenz  <olenz@qwghlm>
 
 	* pbcjoin.tcl: Small fix to allow pbc join to be used on several

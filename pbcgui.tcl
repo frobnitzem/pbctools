@@ -6,8 +6,8 @@
 ########################################################################
 #
 # create package and namespace and default all namespace global variables.
-package provide pbcgui 2.6
-package require pbctools 2.6
+package provide pbcgui 2.7
+package require pbctools 2.7
 
 namespace eval ::pbcgui:: {
     namespace export pbcgui
