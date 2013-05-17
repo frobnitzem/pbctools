@@ -57,6 +57,11 @@ printed. The list of available subcommands can be found in table
     & \pageref{sec:set}
     \\\hline
   
+    \mbox{\texttt{get} [\textit{options}\dots]}
+    & Get the VMD unit cell properties. 
+    & \pageref{sec:get}
+    \\\hline
+
     \mbox{\texttt{readxst} \textit{xstfile}} [\textit{options}\dots]
     & Read the VMD unit cell properties from an XST file.
     & \pageref{sec:readxst} 
@@ -65,11 +70,6 @@ printed. The list of available subcommands can be found in table
     \mbox{\texttt{writexst} \textit{xstfile}}
     & Write the VMD unit cell properties to an XST file.
     & \pageref{sec:writexst} 
-    \\\hline
-  
-    \texttt{get} [\textit{options}\dots]
-    & Get the VMD unit cell properties. 
-    & \pageref{sec:get}
     \\\hline
   
     \texttt{wrap} [\textit{options}\dots]
@@ -128,17 +128,18 @@ want to use a more recent version of \pbctools than what came with the
 VMD distribution, you can activate the \pbctools plugin as follows:
 
 \begin{enumerate}
-\item Download the \pbctools plugin from its
-  homepage\footnote{\url{http://www.espresso-pp.de/projects/pbctools/}}
-  (either as a package, or from Subversion).
-\item Unpack the archive to an arbitrary installation directory\\ (\eg
-  \verb!/usr/local/lib/vmd/plugins-local/pbctools/!).
+\item Fetch the \pbctools plugin from Github
+\begin{Verbatim}
+git clone git://github.com/olenz/pbctools.git
+\end{Verbatim}
+This will create a new directory \texttt{pbctools} in the current
+directory.
 \item Add the following lines to your VMD startup file
   (\verb!~/.vmdrc! on Unix or \verb!vmd.rc! on Windows)\footnote{For
     more details on the startup files, see chapter ``Startup Files''
     in the VMD User's Guide.}:
 \begin{Verbatim}
-set dir \textrm{\textit{installation-directory}}
+set dir \textrm{\textit{pbctools-directory}}
 source $dir/pkgIndex.tcl
 package require pbctools
 \end{Verbatim}
@@ -147,20 +148,17 @@ package require pbctools
 
 
 \newpage
-\section{\texttt{set} -- Setting the unitcell
-  parameters}
+\section{\texttt{set} -- Setting the unitcell parameters}
+\label{sec:set}
 
 To be able to work correctly, all other procedures of the \pbctools
 plugin require the VMD unitcell parameters to be set.  Some file
 formats and their readers provide the necessary information (\eg the
 DCD, VTF and Amber crdbox formats).  When the format does not provide
 the information, the parameters can either be set with help of the
-command \texttt{pbc set} (see section \ref{sec:set}), or they can be
-read in from a file in XST format via the procedure \texttt{pbc
-  readxst} (see section \ref{sec:readxst}).
-
-\subsection{\texttt{set}}
-\label{sec:set}
+command \texttt{pbc set}, or they can be read in from a file in XST
+format via the procedure \texttt{pbc readxst} (see section
+\ref{sec:readxst}).
 
 \minisec{Syntax}
 \mbox{\texttt{pbc} \texttt{set} \textit{cell}} [\textit{options}\dots]
@@ -225,8 +223,69 @@ x-axis.
 \end{tabular}
  
 
-\newpage
 
+\newpage
+\section{\texttt{get} -- Getting the unitcell parameters}
+\label{sec:get}
+
+\minisec{Syntax}
+\texttt{pbc} \texttt{get} [\textit{options}\dots]
+
+\minisec{Description}
+Gets the VMD unit cell properties from the specified frames. Returns a
+list of one parameter set for each frame or an empty list when an
+error occured.
+
+\minisec{Example}
+
+\begin{Verbatim}
+# get the unit cell parameters of the current frame
+set cell [pbc get -now]
+\end{Verbatim}
+
+\minisec{Options}
+
+\begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
+\hline
+
+\texttt{-molid} \textit{molid}$|$\texttt{top}
+& Which molecule to use (default: \texttt{top})
+\\ \hline
+
+\texttt{-first} \textit{frame}$|$\texttt{first}$|$\texttt{now}
+&  The first frame to use (default: \texttt{now}).
+\\ \hline
+
+\texttt{-last} \textit{frame}$|$\texttt{last}$|$\texttt{now}
+& The last frame to use (default: \texttt{now}).
+\\ \hline
+
+\texttt{-all}[\texttt{frames}]
+& Equivalent to \texttt{-first first -last last}.
+\\ \hline
+
+\texttt{-now}
+& Equivalent to \texttt{-first now -last now}.
+\\ \hline
+
+\texttt{-namd}$|$\texttt{-vmd}
+& Format of the unit cell parameters. When \texttt{-vmd}
+is used, a parameter set will contains the VMD unitcell
+parameters \textit{a}, \textit{b}, \textit{c}, \textit{alpha},
+\textit{beta}, \textit{gamma}. When \texttt{-namd} is used, a
+parameter set contains the three 3D unit cell vectors \textit{A},
+\textit{B} and \textit{C} (default: \texttt{-vmd}).
+\\ \hline  
+
+\texttt{-}[\texttt{no}]\texttt{check}
+& Check whether the unit cell parameters seem reasonable, \ie whether
+the side lengths are not too small and the angles are not very small
+or very large (default: \texttt{-nocheck}).
+\\ \hline  
+
+\end{tabular}
+
+\newpage
 \section{\texttt{readxst} and \texttt{writexst} -- Handling XST files}
 \label{sec:writexst}
 \label{sec:readxst}
@@ -298,67 +357,6 @@ when \textit{A} ist not aligned with the x-axis.
 \texttt{-log} \textit{logfile}
 & Log file used for debugging information.
 \\ \hline
-\end{tabular}
-
-\newpage
-\section{\texttt{get} -- Getting the unitcell parameters}
-\label{sec:get}
-
-\minisec{Syntax}
-\texttt{pbc} \texttt{get} [\textit{options}\dots]
-
-\minisec{Description}
-Gets the VMD unit cell properties from the specified frames. Returns a
-list of one parameter set for each frame or an empty list when an
-error occured.
-
-\minisec{Example}
-
-\begin{Verbatim}
-# get the unit cell parameters of the current frame
-set cell [pbc get -now]
-\end{Verbatim}
-
-\minisec{Options}
-
-\begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
-\hline
-
-\texttt{-molid} \textit{molid}$|$\texttt{top}
-& Which molecule to use (default: \texttt{top})
-\\ \hline
-
-\texttt{-first} \textit{frame}$|$\texttt{first}$|$\texttt{now}
-&  The first frame to use (default: \texttt{now}).
-\\ \hline
-
-\texttt{-last} \textit{frame}$|$\texttt{last}$|$\texttt{now}
-& The last frame to use (default: \texttt{now}).
-\\ \hline
-
-\texttt{-all}[\texttt{frames}]
-& Equivalent to \texttt{-first first -last last}.
-\\ \hline
-
-\texttt{-now}
-& Equivalent to \texttt{-first now -last now}.
-\\ \hline
-
-\texttt{-namd}$|$\texttt{-vmd}
-& Format of the unit cell parameters. When \texttt{-vmd}
-is used, a parameter set will contains the VMD unitcell
-parameters \textit{a}, \textit{b}, \textit{c}, \textit{alpha},
-\textit{beta}, \textit{gamma}. When \texttt{-namd} is used, a
-parameter set contains the three 3D unit cell vectors \textit{A},
-\textit{B} and \textit{C} (default: \texttt{-vmd}).
-\\ \hline  
-
-\texttt{-}[\texttt{no}]\texttt{check}
-& Check whether the unit cell parameters seem reasonable, \ie whether
-the side lengths are not too small and the angles are not very small
-or very large (default: \texttt{-nocheck}).
-\\ \hline  
-
 \end{tabular}
 
 \newpage
