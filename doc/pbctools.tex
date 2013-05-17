@@ -4,6 +4,7 @@
 \usepackage{xspace}
 \usepackage{verbatim}           % required for \verbatim and \endverbatim
 \usepackage{fancyvrb}
+\usepackage{longtable}
 
 % no graphics so far
 %\usepackage{graphicx}
@@ -27,15 +28,29 @@
 
 \maketitle
 
-\section{Introduction}
-The VMD plugin ``\pbctools'' provides the following procedures to
-handle periodic boundary conditions:
+The plugin \texttt{pbctools} provides Tcl functions to handle periodic
+boundary conditions. 
 
-\begin{center}
+\section{Basic usage}
+All of the plugin's functions can be accessed via the Tcl text command
+
+\begin{Verbatim}
+  pbc \textrm{\textit{subcommand}} [\textrm{\textit{options}}]...
+\end{Verbatim}
+
+\noindent that you can write in a VMD-Tcl-script or interactively
+enter in the VMD console window or the VMD TkConsole (accessible via
+VMD Main Menu $\rightarrow$ Extensions $\rightarrow$ Tk Console).
+When no \textit{subcommand} is provided, a short help message will be
+printed. The list of available subcommands can be found in table
+\ref{tab:commands}.
+
+\begin{table}[p]
+  \centering
   \begin{tabular}{|p{0.3\textwidth}|p{0.55\textwidth}|r|}
     \hline
     \textbf{Subcommand} & \textbf{Description} & \textbf{p.}\\\hline\hline
-  
+    
     \mbox{\texttt{set} \textit{cell}} [\textit{options}\dots]
     & Set the VMD unit cell properties (\eg to use VMD's feature that
     allows to display periodic copies of the system). 
@@ -45,6 +60,11 @@ handle periodic boundary conditions:
     \mbox{\texttt{readxst} \textit{xstfile}} [\textit{options}\dots]
     & Read the VMD unit cell properties from an XST file.
     & \pageref{sec:readxst} 
+    \\\hline
+
+    \mbox{\texttt{writexst} \textit{xstfile}}
+    & Write the VMD unit cell properties to an XST file.
+    & \pageref{sec:writexst} 
     \\\hline
   
     \texttt{get} [\textit{options}\dots]
@@ -91,20 +111,10 @@ handle periodic boundary conditions:
     & \pageref{sec:box_draw}
     \\\hline
   \end{tabular}
-\end{center}
-
-\section{Basic usage}
-All of the plugin's functions can be accessed via the Tcl text command
-
-\begin{Verbatim}
-  pbc \textrm{\textit{subcommand}} [\textrm{\textit{options}}]...
-\end{Verbatim}
-
-\noindent that you can write in a VMD-Tcl-script or interactively
-enter in the VMD console window or the VMD TkConsole (accessible via
-VMD Main Menu $\rightarrow$ Extensions $\rightarrow$ Tk Console).
-When no \textit{subcommand} is provided, a short help message will be
-printed.
+  
+  \caption{List of the subcommands of the \pbctools plugin.}
+  \label{tab:commands}
+\end{table}
 
 \section{Installation}
 
@@ -135,8 +145,9 @@ package require pbctools
 %$
 \end{enumerate}
 
+
 \newpage
-\section{\texttt{set} and \texttt{readxst} -- Setting the unitcell
+\section{\texttt{set} -- Setting the unitcell
   parameters}
 
 To be able to work correctly, all other procedures of the \pbctools
@@ -144,7 +155,7 @@ plugin require the VMD unitcell parameters to be set.  Some file
 formats and their readers provide the necessary information (\eg the
 DCD, VTF and Amber crdbox formats).  When the format does not provide
 the information, the parameters can either be set with help of the
-command \texttt{pbc set} (see section \ref{sec:set}), or it can be
+command \texttt{pbc set} (see section \ref{sec:set}), or they can be
 read in from a file in XST format via the procedure \texttt{pbc
   readxst} (see section \ref{sec:readxst}).
 
@@ -213,20 +224,25 @@ x-axis.
 \\ \hline
 \end{tabular}
  
+
 \newpage
-\subsection{\texttt{readxst}}
+
+\section{\texttt{readxst} and \texttt{writexst} -- Handling XST files}
+\label{sec:writexst}
 \label{sec:readxst}
 
 \minisec{Syntax}
-\texttt{pbc} \texttt{readxst} \textit{xstfile} [\textit{options}\dots]
+\texttt{pbc} \texttt{readxst} \textit{xstfile} [\textit{options}\dots]\\
+\texttt{pbc} \texttt{writexst} \textit{xstfile}
 
 \minisec{Description}
-Read the unit cell information from an XST or XSC file.
+Read/write the unit cell information from an XST or XSC file.
 
 \minisec{Example}
 \begin{Verbatim}
 # read the unit cell parameters from system.xst
 pbc readxst system.xst
+pbc writexst system.xst
 \end{Verbatim}
 
 \minisec{Options}
@@ -283,7 +299,6 @@ when \textit{A} ist not aligned with the x-axis.
 & Log file used for debugging information.
 \\ \hline
 \end{tabular}
-
 
 \newpage
 \section{\texttt{get} -- Getting the unitcell parameters}
@@ -358,9 +373,22 @@ or very large (default: \texttt{-nocheck}).
 
 Wrap atoms into a single unitcell.
 
+\minisec{Example}
+
+\begin{Verbatim}
+# wrap the system into the orthorhombic box shifted by one box length in X-dir
+pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
+\end{Verbatim}
+
+
 \minisec{Options}
 
-\begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
+\begin{longtable}{|p{0.3\textwidth}|p{0.64\textwidth}|}
+
+\multicolumn{2}{r}{\dots}
+\endfoot
+\endlastfoot
+
 \hline
 
 \texttt{-molid} \textit{molid}$|$\texttt{top}
@@ -451,16 +479,9 @@ three numerical values. (default: \verb!{0 0 0}!)
 & Draw some test vectors (for debugging) (default: \texttt{-nodraw}).
 \\ \hline
 
-\end{tabular}
+\end{longtable}
 
-\minisec{Example}
-
-\begin{Verbatim}
-# wrap the system into the orthorhombic box
-# shifted by one box length in X-dir
-pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
-\end{Verbatim}
-
+\newpage
 \section{\texttt{unwrap} -- Unwrapping atoms}
 \label{sec:unwrap}
 \minisec{Syntax}
@@ -483,7 +504,7 @@ probably gives the best result:
 \begin{enumerate}
 \item Go to the first frame.
 \item \label{shape} Shape the unitcell of the frame for the best
-  visualization by using the commands \mbox{\texttt{pbc join -now}}
+  visualization by using the commands\\ \mbox{\texttt{pbc join -now}}
   and \mbox{\texttt{pbc wrap -now}} with appropriate options.
 \item Unwrap the trajectory, starting from the current frame, by using\\
   \mbox{\texttt{pbc unwrap -first now}}.
@@ -570,22 +591,23 @@ With the option \texttt{-bondlist} you can select an alternate algorithm
 that joins compounds based on direct bonds and does not suffer from this
 limitation, but can be significantly slower.
 
-\minisec{Examples:}
+\minisec{Examples}
 
 \begin{Verbatim}
 # join all residues such that the Carbon alpha atom 
 # is in the central image
 pbc join res -ref "name CA"
-\end{Verbatim}
-
-\begin{Verbatim}
 # join all bonds of long polymer chain molecules
 pbc join fragment -bondlist
 \end{Verbatim}
 
 \minisec{Options}
 
-\begin{tabular}{|p{0.3\textwidth}|p{0.64\textwidth}|}
+\begin{longtable}{|p{0.3\textwidth}|p{0.64\textwidth}|}
+\multicolumn{2}{r}{\dots}
+\endfoot
+\endlastfoot
+
 \hline
 
 \texttt{-molid} \textit{molid}$|$\texttt{top}
@@ -637,7 +659,7 @@ reference atom (default: \texttt{-noref}).
 & Turn on/off verbosity of the function (for debugging) (default:
 \texttt{-noverbose}).
 \\ \hline
-\end{tabular}
+\end{longtable}
 
 \newpage
 \section{\texttt{box} and \texttt{box\_draw} -- Drawing the unit cell boundaries}
@@ -774,6 +796,7 @@ set box1 [pbc box_draw -shiftcenterrel { 0 0 1 }]
 
 The \pbctools plugin has been written by (in alphabetical order)
 \begin{itemize}
+\item Toni Giorgino \texttt{<toni.giorgino \_at\_ isib.cnr.it>}
 \item Jerome Henin \texttt{<jhenin \_at\_ cmm.upenn.edu>}
 \item Olaf Lenz \texttt{<olenz \_at\_ icp.uni-stuttgart.de>} (maintainer)
 \item Cameron Mura \texttt{<cmura \_at\_ mccammon.ucsd.edu>}
@@ -783,6 +806,6 @@ The \texttt{pbcbox} procedure copies a lot of the ideas of Axel
 Kohlmeyer's script \texttt{vmd\_draw\_unitcell}.
 Please submit your bug reports, comments and feature requests on the
 \pbctools
-homepage\footnote{\url{http://www.espresso-pp.de/projects/pbctools/}}.
+homepage\footnote{\url{http://github.com/olenz/pbctools/}}.
 
 \end{document}
