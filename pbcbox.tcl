@@ -8,7 +8,7 @@
 # original pbctools script and Axel Kohlmeyer's script 
 # vmd_draw_unitcell.
 #
-# $Id$
+# $Id: pbcbox.tcl,v 1.16 2013/04/15 14:36:25 johns Exp $
 #
 
 package provide pbctools 2.7
@@ -124,7 +124,7 @@ namespace eval ::PBCTools:: {
 		set origin [vecadd $origin $centerbb]
 	    }
 	    default {		
-#		vmdcon -error "pbcbox: bad argument to -center: $center" 
+#		vmdcon -err "pbcbox: bad argument to -center: $center" 
 
 		# for backwards compatibility
 		vmdcon -warn "Using a selection as argument for the option \"-center\" is deprecated."

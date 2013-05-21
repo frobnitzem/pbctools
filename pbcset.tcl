@@ -587,12 +587,12 @@ namespace eval ::PBCTools:: {
     proc pbc_check_cell { cell } {
 	foreach { a b c alpha beta gamma } $cell {}
 	if { $a < 1.0e-10 || $b < 1.0e-10 || $c < 1.0e-10 } then {
-	    vmdcon -error "Suspicious pbc side length (a=$a b=$b c=$c). Have you forgotten to set the pbc parameters?"
+	    vmdcon -err "Suspicious pbc side length (a=$a b=$b c=$c). Have you forgotten to set the pbc parameters?"
 	}
 	if { [expr $alpha < 1.0e-10 || $alpha > 179.999 \
 		  || $beta < 1.0e-10 || $beta > 179.999 \
 		  || $gamma < 1.0e-10 || $gamma > 179.999 ] } then {
-	    vmdcon -error "Suspicious pbc angle (alpha=$alpha beta=$beta gamma=$gamma)."
+	    vmdcon -err "Suspicious pbc angle (alpha=$alpha beta=$beta gamma=$gamma)."
 	} 
 	return;
     }

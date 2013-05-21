@@ -71,9 +71,9 @@ namespace eval ::PBCTools:: {
 		set compoundseltext "index %s"
 	    }
 	    default {
-		vmdcon -error "pbcjoin: unknown compound type $compoundtype"
-		vmdcon -error "pbcjoin: syntax: pbc join <compound> \[<options> ...\]"
-		vmdcon -error "pbcjoin: supported compound types: segment, residue, chain, fragment, connected"
+		vmdcon -err "pbcjoin: unknown compound type $compoundtype"
+		vmdcon -err "pbcjoin: syntax: pbc join <compound> \[<options> ...\]"
+		vmdcon -err "pbcjoin: supported compound types: segment, residue, chain, fragment, connected"
 		error "pbcjoin: argument parse error"
 	    }
 	}
