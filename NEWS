@@ -1,7 +1,12 @@
-Changes in v2.6
+Changes in v2.7
 ---------------
 
 * Added function "writexst".
+* Improved docs.
+
+Changes in v2.6
+---------------
+
 * Added option "pbc join connected".
 * Added a "-material" flag to "pbc box"
 * Added a "-bondlist|-nobondlist" flag of "pbc join" that selects an
