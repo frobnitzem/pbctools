@@ -31,7 +31,7 @@ proc pbc { args } {
 
         Reading/writing an XST file:
 	  readxst $xstfile [options...]
-          writexst $xstfile
+          writexst $xstfile [options...]
 	
 	Drawing a box:
 	  box [options...]

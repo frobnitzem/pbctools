@@ -386,33 +386,72 @@ namespace eval ::PBCTools:: {
     # 
     # pbcwritexst $file
     #
-    # AUTHORS: Jan, Cameron
+    # Note that frame numbering starts from -step0 (irregardless of
+    # -first).  Origin and values < 1e4 are set to zero.
     #
-    # Note that the origin will be discarded and values < 1e4 will be
-    # rounded to zero. 
+    # OPTIONS:
+    #   -molid $molid|top
+    #   -first $first|first|now
+    #   -last $last|last|now
+    #   -all|allframes
+    #   -now
+    #   -stride $n
+    #   -step2frame $num
+    #   -step0 $num
     #
     # AUTHOR: Toni
     #
-    proc pbcwritexst {xstfile} {
+    proc pbcwritexst {xstfile args} {
+	# Defaults
+	set molid  "top"
+	set first  0
+	set last   "last"
+	set stride 1
+	set alignx "-noalignx"
+	set step2frame 1
+	set step0 0
+
+	# Parse options
+	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
+	    set arg [ lindex $args $argnum ]
+	    set val [ lindex $args [expr {$argnum + 1}]]
+	    switch -- $arg {
+		"-molid" { set molid $val; incr argnum; }
+		"-first" { set first $val; incr argnum }
+		"-last"  { set last $val; incr argnum }
+		"-allframes" -
+		"-all"   { set last "last"; set first "first" }
+		"-now"   { set last "now"; set first "now" }
+		"-stride" { set stride $val; incr argnum; }
+		"-step2frame" { set step2frame $val; incr argnum }
+		"-step0" { set step0 $val; incr argnum }
+		default  { 
+		    error "pbcset_xst: unknown option: $arg"
+		}
+	    }
+	}
+	# No need to handle symbolic options - pbc get will take care of it
+
         set ts 0
         set ch [open $xstfile w]
         puts $ch "# NAMD extended system trajectory file"
         puts $ch "#\$LABELS step a_x a_y a_z b_x b_y b_z c_x c_y c_z o_x o_y o_z"
-        foreach box [pbc get -namd -all] {
+	set box_list [pbc get -namd -first $first -last $last -molid $molid]
+	for {set ts 0} {$ts < [llength $box_list]} {incr ts $stride} {
+	    set box [lindex $box_list $ts]
             set box_f  [concat {*}$box];  # flatten
             set box_str ""
             set column 0
             foreach v $box_f {
-                set box_str "$box_str [format %8.4f $v]"
+                append box_str " " [format %8.4f $v]
                 incr column
                 if {$column==3 || $column==6} {
-                    set box_str "$box_str    "; # Separate vectors
+                    append box_str "    "; # Pretty-print vectors
                 }
             }
             #  %f truncates ~epsilons
-            set ts_str [format %-8d $ts]
+            set ts_str [format %-8d [expr $ts*$step2frame+$step0]]
             puts $ch "$ts_str $box_str    0.000 0.000 0.000"
-            incr ts
         }
         close $ch
     }

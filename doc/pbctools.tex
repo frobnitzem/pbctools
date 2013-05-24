@@ -62,12 +62,12 @@ printed. The list of available subcommands can be found in table
     & \pageref{sec:get}
     \\\hline
 
-    \mbox{\texttt{readxst} \textit{xstfile}} [\textit{options}\dots]
+    \mbox{\texttt{readxst} \textit{xstfile} [\textit{options}\dots]}
     & Read the VMD unit cell properties from an XST file.
     & \pageref{sec:readxst} 
     \\\hline
 
-    \mbox{\texttt{writexst} \textit{xstfile}}
+    \mbox{\texttt{writexst} \textit{xstfile} [\textit{options}\dots]}
     & Write the VMD unit cell properties to an XST file.
     & \pageref{sec:writexst} 
     \\\hline
@@ -292,7 +292,7 @@ or very large (default: \texttt{-nocheck}).
 
 \minisec{Syntax}
 \texttt{pbc} \texttt{readxst} \textit{xstfile} [\textit{options}\dots]\\
-\texttt{pbc} \texttt{writexst} \textit{xstfile}
+\texttt{pbc} \texttt{writexst} \textit{xstfile} [\textit{options}\dots]
 
 \minisec{Description}
 Read/write the unit cell information from an XST or XSC file.
@@ -335,7 +335,7 @@ file (default: 1).
 \\ \hline
 
 \texttt{-}[\texttt{no}]\texttt{skipfirst}
-& Whether to skip the first line of the file, or not
+& \emph{(only readxst)} Whether to skip the first line of the file, or not
 (default: \texttt{-skipfirst} for XST files, \texttt{-noskipfirst} for
 XSC files)
 \\ \hline
@@ -347,15 +347,19 @@ XSTs and want to avoid over-writing info of earlier frames
 by having a unique mapping between step and frame.
 \\ \hline
 
+\texttt{-step0} \textit{num}
+& \emph{(only writexst)} Timestep number for the first written frame.
+\\ \hline
+
 \texttt{-}[\texttt{no}]\texttt{alignx}
-& If the unit cell vector \textit{A} is not parallel to the x-axis,
-\texttt{-alignx} will rotate the system so that it is. If
+& \emph{(only readxst)} If the unit cell vector \textit{A} is not
+parallel to the x-axis, \texttt{-alignx} will rotate the system so that it is. If
 \texttt{-noalignx} is used, the function will return with a warning
 when \textit{A} ist not aligned with the x-axis.
 \\ \hline
 
 \texttt{-log} \textit{logfile}
-& Log file used for debugging information.
+& \emph{(only readxst)} Log file used for debugging information.
 \\ \hline
 \end{tabular}
 
