@@ -11,7 +11,7 @@
 # $Id: pbcbox.tcl,v 1.16 2013/04/15 14:36:25 johns Exp $
 #
 
-package provide pbctools 2.7
+package provide pbctools 2.8
 
 namespace eval ::PBCTools:: {
     namespace export pbc*

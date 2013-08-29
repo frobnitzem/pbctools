@@ -8,8 +8,8 @@
 # $Id: pbcgui.tcl,v 1.4 2013/04/15 16:48:10 johns Exp $
 #
 # create package and namespace and default all namespace global variables.
-package provide pbcgui 2.7
-package require pbctools 2.7
+package provide pbcgui 2.8
+package require pbctools 2.8
 
 namespace eval ::pbcgui:: {
     namespace export pbcgui

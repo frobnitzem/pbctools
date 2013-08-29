@@ -8,7 +8,7 @@
 # $Id$
 #
 
-package provide pbctools 2.7
+package provide pbctools 2.8
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -328,12 +328,7 @@ namespace eval ::PBCTools:: {
 	
 	# Now we can easily select the atoms outside the cell and
 	# wrap them
-	shift_sel $molid [format $wrapsel "x<1"] {-1 0 0}
-	shift_sel $molid [format $wrapsel "x>0"] {1 0 0}
-	shift_sel $molid [format $wrapsel "y<1"] {0 -1 0}
-	shift_sel $molid [format $wrapsel "y>0"] {0 1 0}
-	shift_sel $molid [format $wrapsel "z<1"] {0 0 -1}
-	shift_sel $molid [format $wrapsel "z>0"] {0 0 1}
+        wrap_to_orthorhombic_unitcell $molid {1 0 0} {0 1 0} {0 0 1} {0 0 0} $wrapsel
 	
 	$usersel move [measure inverse $mat4]
 	$usersel delete
@@ -367,11 +362,11 @@ namespace eval ::PBCTools:: {
 	set cz [expr $oz + [lindex $C 2]]
 
 	shift_sel $molid [format $wrapsel "z<$cz"] [vecinvert $C]
-	shift_sel $molid [format $wrapsel "z>$oz"] $C
+	shift_sel $molid [format $wrapsel "z>=$oz"] $C
 	shift_sel $molid [format $wrapsel "y<$cy"] [vecinvert $B]
-	shift_sel $molid [format $wrapsel "y>$oy"] $B
+	shift_sel $molid [format $wrapsel "y>=$oy"] $B
 	shift_sel $molid [format $wrapsel "x<$cx"] [vecinvert $A]
-	shift_sel $molid [format $wrapsel "x>$ox"] $A
+	shift_sel $molid [format $wrapsel "x>=$ox"] $A
     }
 
 
