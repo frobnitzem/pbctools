@@ -3,4 +3,4 @@ mol new water.psf waitfor all
 mol addfile water.dcd waitfor all
 
 pbc box
-pbc wrap -all -compound res
+pbc wrap -all -cell compact -compound res

@@ -23,25 +23,24 @@ namespace eval ::PBCTools:: {
     #   -last $last|last|now
     #   -all|allframes
     #   -now
-    #   -parallelepiped|-orthorhombic
+    #   -compact|-parallelepiped|-brick
     #   -sel $sel
     #   -nocompound|-compound res[idue]|seg[ment]|chain|fragment
-    #   -nocompundref|-compoundref $sel
+    #   -nocompoundref|-compoundref $sel
     #   -center origin|unitcell|com|centerofmass|bb|boundingbox
     #   -centersel $sel
     #   -shiftcenter $shift 
     #   -shiftcenterrel $shift
-    #   -[no]draw
     #   -verbose
     #
-    # AUTHORS: Jan, Olaf
+    # AUTHORS: Jan, Olaf, David M. Rogers
     #
     proc pbcwrap { args } {
 	# Set the defaults
 	set molid "top"
 	set first "now"
 	set last "now"
-	set orthorhombic 0
+	set wraptype "brick"
 	set sel "all"
 	set compound ""
 	set compoundref ""
@@ -49,7 +48,6 @@ namespace eval ::PBCTools:: {
 	set centerseltext "all"
 	set shiftcenter {0 0 0}
 	set shiftcenterrel {}
-	set draw 0
 	set verbose 0
 
 	# Parse options
@@ -63,14 +61,12 @@ namespace eval ::PBCTools:: {
 		"-allframes" -
 		"-all" { set last "last"; set first "first" }
 		"-now" { set last "now"; set first "now" }
-		"-parallelepiped" { set orthorhombic 0 }
-		"-orthorhombic" { set orthorhombic 1 }
-		"-rectangular" { set orthorhombic 1 }
 		"-sel" { set sel $val; incr argnum }
 		"-nocompound" { set compound "" }
 		"-compound" { set compound $val; incr argnum }
 		"-nocompoundref" { set compoundref "" }
 		"-compoundref" { set compoundref $val; incr argnum }
+                "-cell" { set wraptype $val; incr argnum }
 		"-center" { set center $val; incr argnum }
 		"-centersel" { set centerseltext $val; incr argnum }
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
@@ -114,17 +110,18 @@ namespace eval ::PBCTools:: {
 	    }
 	}
 
-	# handle the reference selection
-	# $wrapsel will be used as format string
+	# Handle the reference selection
+	# $wrapsel will be used as format string,
+        # specifying which group to wrap
 	if { [string length $compound] } then {
 	    if { [string length $compoundref] } then {
-		set wrapsel "($sel) and (not same $compound as (($compoundref) and (%s)))"
+		set wrapsel "($sel) and (same $compound as (($compoundref) and (%s)))"
 	    } else {
-		set wrapsel "($sel) and (not same $compound as (%s))"
+		set wrapsel "($sel) and (same $compound as (%s))"
 	    }
 	} else {
 	    # no compound case
-	    set wrapsel "($sel) and (not %s)"
+	    set wrapsel "($sel) and (%s)"
 	}
 	if { $verbose } then { vmdcon -info "wrapsel=$wrapsel" }
 
@@ -147,11 +144,24 @@ namespace eval ::PBCTools:: {
 	    set Cz [lindex $C 2]
 
 	    # compute the origin (lower left corner)
-	    if { $orthorhombic } then {
-		set origin [vecscale -0.5 [list $Ax $By $Cz]]
-	    } else {
-		set origin [vecscale -0.5 [vecadd $A $B $C]]
-	    }
+	    switch -- $wraptype {
+		"compact"        {
+                    set origin [vecscale -0.5 [vecadd $A $B $C]]
+                }
+		"para" -
+		"parallelepiped" {
+                    set origin [vecscale -0.5 [vecadd $A $B $C]]
+                }
+		"orthorhombic" -
+		"rectangular" -
+		"brick"          { 
+		    set origin [vecscale -0.5 [list $Ax $By $Cz]]
+                }
+		default {
+ 		    error "error: pbcwrap: bad argument to -cell: $wraptype" 
+                }
+            }
+
 	    # compute the center of the box
 	    switch -- $center {
 		"unitcell" { set origin { 0 0 0 } }
@@ -228,13 +238,23 @@ namespace eval ::PBCTools:: {
 	    }
 
 	    # Wrap it
-	    if { $orthorhombic } then {
-		wrap_to_orthorhombic_unitcell \
-		    $molid $A $B $C $origin $wrapsel
-	    } else {
-		wrap_to_unitcell \
-		    $molid $A $B $C $origin $sel $wrapsel $draw
-	    }
+	    switch -- $wraptype {
+		"compact"        {
+                    wrap_compact \
+                        $molid $A $B $C $origin $wrapsel
+                }
+		"para" -
+		"parallelepiped" {
+                    wrap_para \
+                        $molid $A $B $C $origin $wrapsel
+                }
+		"orthorhombic" -
+		"rectangular" -
+		"brick"          { 
+                    wrap_brick \
+                        $molid $A $B $C $origin $wrapsel
+                }
+            }
 
 	    # print timestamp
 	    set time [clock clicks -milliseconds]
@@ -258,115 +278,66 @@ namespace eval ::PBCTools:: {
     }
 
     #########################################################
-    # Wrap the selection $seltext of molecule $molid
+    # Wrap the selection $wrapsel of molecule $molid
     # in the current frame into the unitcell parallelepiped
     # defined by $A, $B, $C and $origin.
-    # When $draw is set, draw some test vectors (for
-    # debugging).
-    # $compoundsel contains a partial selection text that
-    # is used to avoid splitting compounds.
-    # Return the number of atoms that were wrapped.
     #########################################################
-    proc wrap_to_unitcell { molid A B C origin seltext wrapsel draw } {
-	# The wrapping of atoms is done by transforming the unit cell to a 
-	# orthonormal cell which allows to easily select atoms outside the 
-	# cell (x<1 or x>1, ...). After wrapping them along the coordinate axes 
-	# into the cell, the system is transformed back.
-	
-	set a1 $A
-	set a2 $B
-	set a3 $C
-	
-	if {$draw} {
-	    # Draw the unitcell vectors.
-	    #draw delete all
-	    draw color red
-	    draw arrow $origin [vecadd $origin $a1]
-	    draw arrow $origin [vecadd $origin $a2]
-	    draw arrow $origin [vecadd $origin $a3]
-	    #set offset [transoffset $ori]
-	}
-	
-	# Orthogonalize system:
-	# Find an orthonormal basis (in cartesian coords)
-	set obase [orthonormal_basis $a1 $a2 $a3]
-	
-	if {$draw} {
-	    # Draw the orthonormal base vectors (scaled by the 
-	    # length of $a1 to make it visible).
-	    set ob1 [lindex $obase 0]
-	    set ob2 [lindex $obase 1]
-	    set ob3 [lindex $obase 2]
-	    draw color yellow
-	    draw arrow $origin [vecadd $origin [vecscale $ob1 [veclength $a1]]]
-	    draw arrow $origin [vecadd $origin [vecscale $ob2 [veclength $a1]]]
-	    draw arrow $origin [vecadd $origin [vecscale $ob3 [veclength $a1]]]
-	}
-	
-	# Get $obase in cartesian coordinates (it is the inverse of the
-	# $obase->cartesian transformation):
-	set obase_cartcoor  [basis_change $obase [list {1 0 0} {0 1 0} {0 0 1}] ]
+    proc wrap_para { molid A B C origin wrapsel } {
+	set L [transtranspose [list $A $B $C]]
 	
 	# Transform into 4x4 matrix:
-	set obase2cartinv [trans_from_rotate $obase_cartcoor]
+	set recip2cart [transmult [transoffset $origin] [trans_from_rotate $L]]
+        set cart2recip [measure inverse $recip2cart] 
 	
-	# This is the matrix for the $obase->cartesian transformation:
-	set obase2cart  [measure inverse $obase2cartinv]
-	
-	# Get coordinates of $a in terms of $obase
-	set m [basis_change [list $a1 $a2 $a3] $obase]
-	set rmat [measure inverse [trans_from_rotate $m]]
-	
-	# actually: [transmult $obase2cart $obase2cartinv $rmat $obase2cart]
-	set mat4 [transmult $rmat $obase2cart [transoffset [vecinvert $origin]]]
-	
-	# apply the user selection
-	set usersel [atomselect $molid $seltext]
+	# apply the full selection
+	set usersel [atomselect $molid [format $wrapsel "all"]]
 
-	# Transform the unit cell to a orthonormal cell
-	$usersel move $mat4
+	# Transform the unit cell to reciprocal space
+	$usersel move $cart2recip
 	
-	# Now we can easily select the atoms outside the cell and
-	# wrap them
-        wrap_to_orthorhombic_unitcell $molid {1 0 0} {0 1 0} {0 0 1} {0 0 0} $wrapsel
+	# Now we can easily select the atoms outside the cell and wrap them
+        wrap_brick $molid {1 0 0} {0 1 0} {0 0 1} {0 0 0} $wrapsel
 	
-	$usersel move [measure inverse $mat4]
+	$usersel move $recip2cart
 	$usersel delete
-
-	if {$draw} {
-	    # Draw the transformed unitcell vectors (scaled by the length of $a1)
-	    # They should lie exactly on top of the orthogonal basis 
-	    # (drawn before in yellow).
-	    set c1 [vecscale [coordtrans $mat4 $a1] [veclength $a1]]
-	    set c2 [vecscale [coordtrans $mat4 $a2] [veclength $a1]]
-	    set c3 [vecscale [coordtrans $mat4 $a3] [veclength $a1]]
-	    draw color green
-	    draw arrow $origin [vecadd $origin $c1]
-	    draw arrow $origin [vecadd $origin $c2]
-	    draw arrow $origin [vecadd $origin $c3]
-	}
     }
 
+    ########################################################
+    # Wrap all atoms in $wrapsel to their closest approach
+    # to the origin.  This ignores molecule selections
+    # because there doesn't seem to be a way to loop
+    # over residues / chains / etc. inside the selection.
+    #
+    # TODO:
+    # Maybe there's a way to select the first atom of each residue,
+    # (or the cm of each) and only wrap it.
+    # Then sum translation vectors over whole residues to distribute
+    # to all atoms in each residue.
+    ########################################################
+    proc wrap_compact { molid A B C origin wrapsel } {
+        package require pbc_core 2.8
+	set usersel [atomselect $molid [format $wrapsel "all"]]
+        $usersel set {x y z} [wrap_min [list $A $B $C] $origin [$usersel get {x y z}]]
+    }
 
     ########################################################
-    # Wrap the selection $seltext of molecule $molid
+    # Wrap the selection $wrapsel of molecule $molid
     # in the current frame into the orthorhombic unitcell
     # defined by $Ax, $By, $Cz and $origin.
-    # $wrapsel is a format string that will be used together with 
-
+    # $wrapsel is a format string to select groups to shift.
     ########################################################
-    proc wrap_to_orthorhombic_unitcell { molid A B C origin wrapsel } {
+    proc wrap_brick { molid A B C origin wrapsel } {
 	foreach {ox oy oz} $origin {break}
 	set cx [expr $ox + [lindex $A 0]]
 	set cy [expr $oy + [lindex $B 1]]
 	set cz [expr $oz + [lindex $C 2]]
 
-	shift_sel $molid [format $wrapsel "z<$cz"] [vecinvert $C]
-	shift_sel $molid [format $wrapsel "z>=$oz"] $C
-	shift_sel $molid [format $wrapsel "y<$cy"] [vecinvert $B]
-	shift_sel $molid [format $wrapsel "y>=$oy"] $B
-	shift_sel $molid [format $wrapsel "x<$cx"] [vecinvert $A]
-	shift_sel $molid [format $wrapsel "x>=$ox"] $A
+	shift_sel $molid [format $wrapsel "z>=$cz"] [vecinvert $C]
+	shift_sel $molid [format $wrapsel "z<$oz"] $C
+	shift_sel $molid [format $wrapsel "y>=$cy"] [vecinvert $B]
+	shift_sel $molid [format $wrapsel "y<$oy"] $B
+	shift_sel $molid [format $wrapsel "x>=$cx"] [vecinvert $A]
+	shift_sel $molid [format $wrapsel "x<$ox"] $A
     }
 
 
@@ -400,141 +371,6 @@ namespace eval ::PBCTools:: {
 	set v2 [list 0 $s2 0 0]
 	set v3 [list 0 0 $s3 0]
 	return [list $v1 $v2 $v3 {0.0 0.0 0.0 1.0}]
-    }
-
-    ########################################################
-    # Returns vector $vec in coordinates of an orthonormal #
-    # basis $obase.                                        #
-    ########################################################
-
-    proc basis_change { vec obase } {
-	set dim1 [llength $vec]
-	set dim2 [llength [lindex $obase 0]]
-	if {$dim1!=$dim2} {
-	    error "basis_change: dim of vector and basis differ; $dim1, $dim2"
-	}
-	set cc {}
-	foreach i $obase {
-	    set c {}
-	    foreach j $vec {
-		lappend c [vecdot $j $i]
-	    }
-	    lappend cc $c
-	}
-	return $cc
-    }
-
-    ###################################################
-    # Find an orthogonal basis R^3 with $ob1=$b1      #
-    ###################################################
-
-    proc orthogonal_basis { b1 b2 b3 } {
-	set ob1 $b1
-	set e1  [vecnorm $ob1]
-	set ob2 [vecsub $b2  [vecscale [vecdot $e1 $b2] $e1]]
-	set e2  [vecnorm $ob2]
-	set ob3 [vecsub $b3  [vecscale [vecdot $e1 $b3] $e1]]
-	set ob3 [vecsub $ob3 [vecscale [vecdot $e2 $b3] $e2]]
-	#draw color red
-	#draw arrow {0 0 0} $b1
-	#draw arrow {0 0 0} $b2
-	#draw arrow {0 0 0} $b3
-	#draw color yellow
-	#draw arrow {0 0 1} $ob1
-	#draw arrow {0 0 1} $ob2
-	#draw arrow {0 0 1} $ob3
-	return [list $ob1 $ob2 $ob3]
-    }
-
-
-    ###################################################
-    # Find an orthogonal basis R^3 with $ob1 || $b1   #
-    ###################################################
-
-    proc orthonormal_basis { b1 b2 b3 } {
-	set ob1 $b1
-	set e1  [vecnorm $ob1]
-	set ob2 [vecsub $b2  [vecscale [vecdot $e1 $b2] $e1]]
-	set e2  [vecnorm $ob2]
-	set ob3 [vecsub $b3  [vecscale [vecdot $e1 $b3] $e1]]
-	set ob3 [vecsub $ob3 [vecscale [vecdot $e2 $b3] $e2]]
-	set e3  [vecnorm $ob3]
-	#draw color red
-	#draw arrow {0 0 0} $b1
-	#draw arrow {0 0 0} $b2
-	#draw arrow {0 0 0} $b3
-	#draw color yellow
-	#draw arrow {0 0 1} $ob1
-	#draw arrow {0 0 1} $ob2
-	#draw arrow {0 0 1} $ob3
-	return [list $e1 $e2 $e3]
-    }
-
-
-    ######################################
-    # Just a test for my algorithm...    #
-    ######################################
-    proc orthogonalizationtest { } {
-	package require vmd_draw_arrow
-	draw delete all
-	set a1 {2 0 3}
-	set a2 {0 3 0}
-	set a3 {0 2 4}
-	# Find an orthonormal basis (in cartesian coords)
-	set b [orthonormal_basis $a1 $a2 $a3]
-	set b1 [lindex $b 0]
-	set b2 [lindex $b 1]
-	set b3 [lindex $b 2]
-	vmdcon -info "b = $b"
-	# Get coordinates of $b in terms of cartesian coords
-	set obase_cartcoor  [basis_change $b [list {1 0 0} {0 1 0} {0 0 1}] ]
-	set obase2cartinv [trans_from_rotate $obase_cartcoor]
-	set obase2cart  [measure inverse $obase2cartinv]
-	set c1  [coordtrans $obase2cart $b1]
-	set c2  [coordtrans $obase2cart $b2]
-	set c3  [coordtrans $obase2cart $b3]
-
-	draw color purple
-	draw arrow {0 0 0} {1 0 0} 0.1
-	draw arrow {0 0 0} {0 1 0} 0.1
-	draw arrow {0 0 0} {0 0 1} 0.11
-	if {0} {
-	    draw color yellow
-	    draw arrow {0 0 0} $c1 0.1
-	    draw arrow {0 0 0} $c2 0.1
-	    draw arrow {0 0 0} $c3 0.1
-	}
-	# Get coordinates of $a in terms of $b
-	set m [basis_change [list $a1 $a2 $a3] $b]
-	vmdcon -info "m = $m"
-
-	set rmat [measure inverse [trans_from_rotate $m]]
-	vmdcon -info $rmat
-
-	# Scale vectors to their original length
-	set smat [scale_mat [veclength $a1] [veclength $a2] [veclength $a3]]
-	vmdcon -info "smat = $smat"
-
-	# Get transformation in cartesian coords
-	# actually: [transmult $obase2cart $obase2cartinv $smat $rmat $obase2cart]
-	set mat4 [transmult $smat $rmat $obase2cart]
-	set c1  [coordtrans $mat4 $a1]
-	set c2  [coordtrans $mat4 $a2]
-	set c3  [coordtrans $mat4 $a3]
-
-	draw color red
-	draw arrow {0 0 0} $a1 0.1
-	draw arrow {0 0 0} $a2 0.1
-	draw arrow {0 0 0} $a3 0.1
-	draw color yellow
-	draw arrow {0 0 0} $b1 0.1
-	draw arrow {0 0 0} $b2 0.1
-	draw arrow {0 0 0} $b3 0.1
-	draw color green
-	draw arrow {0 0 0} $c1 0.09
-	draw arrow {0 0 0} $c2 0.09
-	draw arrow {0 0 0} $c3 0.09
-
     }
 
     # Wrap the coordinates in the variables referenced by var_xs,

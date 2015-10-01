@@ -22,6 +22,7 @@ package provide pbctools 2.8
 ###################################################
 # Main UI
 proc pbc { args } {
+
     proc usage {} {
 	vmdcon -info {usage: pbc <command> [args...]
 
