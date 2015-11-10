@@ -8,5 +8,6 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
+package ifneeded pbc_core 2.8 [load [file join $dir libpbc_core.so]]
 package ifneeded pbcgui 2.8 [list source [file join $dir pbcgui.tcl]]
 package ifneeded pbctools 2.8 [list source [file join $dir pbcbox.tcl]]\n[list source [file join $dir pbcjoin.tcl]]\n[list source [file join $dir pbcset.tcl]]\n[list source [file join $dir pbctools.tcl]]\n[list source [file join $dir pbcunwrap.tcl]]\n[list source [file join $dir pbcwrap.tcl]]

@@ -1,3 +1,16 @@
+Changes in v3.0
+---------------
+
+* Added generic shortest vector solver to wrap atoms into compact cells.
+* (hopefully) someone fixes the official plugin .c -> .so Make rules,
+  so that the new C-code can do many computations faster.
+* Changed periodic wrapping specification to use -cell [brick|para|compact]
+  (default = brick) brick == orthorhombic == rectangular
+  also, para = parallelepiped.
+* Removed unused wrap -draw option and orthonormalization.
+  Did anyone need code to work for non-compact cells (i.e. A_y != 0
+  or A_z != 0)?
+
 Changes in v2.7
 ---------------
 

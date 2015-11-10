@@ -15,7 +15,7 @@ while ($file = <pbc*.tcl>) {
     open(IN, "<$file") || die "Can't open $file for reading!";
     open(OUT, ">$file.new") || die "Can't open $file.new for writing!";
     while (<IN>) {
-	if (s/^package (provide|require) pbc(tools|gui) (.*)$/package $1 pbc$2 $VERSION/) {
+	if (s/^package (provide|require) pbc(tools|gui|_core) (.*)$/package $1 pbc$2 $VERSION/) {
 	    print "  pbc$2 $3 -> $VERSION\n";
 	}
 	print OUT $_;
@@ -51,6 +51,8 @@ close(OUT);
 
 print "  $file.new -> $file.\n";
 rename "$file.new", $file;
+
+print "FIXME! Update version at top of pbc_core.c"
 
 # Now rebuild the docs
 print "Now recreating the documentation...\n";
