@@ -13,7 +13,7 @@
 #include <math.h>
 #include <tcl.h>
 
-#define PBC_CORE_VERSION "2.8"
+#define PBC_CORE_VERSION "3.0"
 
 double round(double);
 

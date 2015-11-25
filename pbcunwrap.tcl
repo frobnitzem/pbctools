@@ -8,7 +8,7 @@
 # $Id$
 #
 
-package provide pbctools 2.8
+package provide pbctools 3.0
 
 namespace eval ::PBCTools:: {
     namespace export pbc*

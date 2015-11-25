@@ -15,7 +15,7 @@ while ($file = <pbc*.tcl>) {
     open(IN, "<$file") || die "Can't open $file for reading!";
     open(OUT, ">$file.new") || die "Can't open $file.new for writing!";
     while (<IN>) {
-	if (s/^package (provide|require) pbc(tools|gui|_core) (.*)$/package $1 pbc$2 $VERSION/) {
+	if (s/package (provide|require) pbc(tools|gui|_core) (.*)$/package $1 pbc$2 $VERSION/) {
 	    print "  pbc$2 $3 -> $VERSION\n";
 	}
 	print OUT $_;
@@ -27,8 +27,11 @@ while ($file = <pbc*.tcl>) {
 }
 
 # Call pkg_mkIndex
-print "Updateing pkgIndex.tcl...\n";
+print "Updating pkgIndex.tcl...\n";
 system('tclsh maintainer/pkg_mkIndex.tcl');
+open(OUT, ">>pkgIndex.tcl") || die "Can't open pkgIndex.tcl for writing!";
+print OUT "package ifneeded pbc_core $VERSION [load [file join \$dir libpbc_core.so]]\n";
+close(OUT);
 print "Finished.\n";
 
 # Bump version in doc/pbctools.tex
@@ -52,7 +55,47 @@ close(OUT);
 print "  $file.new -> $file.\n";
 rename "$file.new", $file;
 
-print "FIXME! Update version at top of pbc_core.c"
+# Bump version in src/pbc_core.c
+$file = "src/pbc_core.c";
+
+print "Working on $file.\n";
+open(IN, "<$file") || die "Can't open $file for reading!";
+open(OUT, ">$file.new") || die "Can't open $file.new for writing!";
+
+# Replace version number.
+while (<IN>) {
+    if (s/^#define PBC_CORE_VERSION "(.*)"/#define PBC_CORE_VERSION "$VERSION"/) {
+	print "  $1 -> $VERSION\n";
+    }
+    print OUT $_;
+}
+
+close(IN);
+close(OUT);
+
+print "  $file.new -> $file.\n";
+rename "$file.new", $file;
+
+# Bump version in Makefile
+$file = "Makefile";
+
+print "Working on $file.\n";
+open(IN, "<$file") || die "Can't open $file for reading!";
+open(OUT, ">$file.new") || die "Can't open $file.new for writing!";
+
+# Replace version number.
+while (<IN>) {
+    if (s/^VMVERSION = (.*)/VMVERSION = $VERSION/) {
+	print "  $1 -> $VERSION\n";
+    }
+    print OUT $_;
+}
+
+close(IN);
+close(OUT);
+
+print "  $file.new -> $file.\n";
+rename "$file.new", $file;
 
 # Now rebuild the docs
 print "Now recreating the documentation...\n";

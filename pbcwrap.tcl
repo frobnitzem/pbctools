@@ -8,7 +8,7 @@
 # $Id$
 #
 
-package provide pbctools 2.8
+package provide pbctools 3.0
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -71,8 +71,6 @@ namespace eval ::PBCTools:: {
 		"-centersel" { set centerseltext $val; incr argnum }
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
 		"-shiftcenterrel" { set shiftcenterrel $val; incr argnum }
-		"-draw" { set draw 1 }
-		"-nodraw" { set draw 0 }
 		"-verbose" { set verbose 1 }
 		"-noverbose" { set verbose 0 }
 		default { error "error: pbcwrap: unknown option: $arg" }
@@ -315,7 +313,7 @@ namespace eval ::PBCTools:: {
     # to all atoms in each residue.
     ########################################################
     proc wrap_compact { molid A B C origin wrapsel } {
-        package require pbc_core 2.8
+        package require pbc_core 3.0
 	set usersel [atomselect $molid [format $wrapsel "all"]]
         $usersel set {x y z} [wrap_min [list $A $B $C] $origin [$usersel get {x y z}]]
     }

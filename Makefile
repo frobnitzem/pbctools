@@ -11,11 +11,13 @@
 # -o libpbc_core.so
 # pbc_core.c
 #
-# -I/System/Library/Frameworks/Tcl.framework/Versions/8.5/Headers
-# -L/System/Library/Frameworks/Tcl.framework/Versions/8.5
+# e.g.
+#   gcc -m32 -shared -o libpbc_core.so -DUSE_TCL_STUBS -I"$TCLINC" pbc_core.c -L"$TCLLIB" -ltclstub8.5
 #
-# with 
-# gcc -m32 -shared -o libpbc_core.so -DUSE_TCL_STUBS -I"$TCLINC" pbc_core.c -L"$TCLLIB" -ltclstub8.5
+# Also of note on OSX are the system frameworks:
+#   -I/System/Library/Frameworks/Tcl.framework/Versions/8.5/Headers
+#   -L/System/Library/Frameworks/Tcl.framework/Versions/8.5
+#
 
 AR= ar
 ARFLAGS = cr
@@ -30,7 +32,7 @@ CXXFLAGS += -g
 VMFILES = pbcbox.tcl pbcgui.tcl pbcjoin.tcl pbcset.tcl pbctools.tcl \
 	pbcunwrap.tcl pbcwrap.tcl pkgIndex.tcl
 
-VMVERSION = 2.8
+VMVERSION = 3.0
 ARCHDIR=${COMPILEDIR}/lib_${ARCH}/tcl/pbctools$(VMVERSION)
 
 VPATH = src ${ARCHDIR}

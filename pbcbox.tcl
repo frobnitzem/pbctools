@@ -11,7 +11,7 @@
 # $Id: pbcbox.tcl,v 1.16 2013/04/15 14:36:25 johns Exp $
 #
 
-package provide pbctools 2.8
+package provide pbctools 3.0
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -22,7 +22,7 @@ namespace eval ::PBCTools:: {
     #
     # OPTIONS:
     #   -molid $molid
-    #   -parallelepiped|-orthorhombic
+    #   -cell para[llelepiped]|brick|ortho[rhombic]|rect[angular]
     #   -style lines|dashed|arrows|tubes
     #   -width $w
     #   -resolution $res
@@ -37,7 +37,6 @@ namespace eval ::PBCTools:: {
 	# Set the defaults
 	set molid "top"
 	set style "lines"
-	set orthorhombic 0
 	set center "unitcell"
 	set centerseltext "all"
 	set shiftcenter {0 0 0}
@@ -46,6 +45,7 @@ namespace eval ::PBCTools:: {
 	set resolution 8
 	set color "blue"
 	set material "Opaque"
+        set wraptype "parallelepiped"
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
@@ -53,9 +53,7 @@ namespace eval ::PBCTools:: {
 	    set val [ lindex $args [expr $argnum + 1]]
 	    switch -- $arg {
 		"-molid"      { set molid $val; incr argnum }
-		"-parallelepiped" { set orthorhombic 0 }
-		"-orthorhombic" { set orthorhombic 1 }
-		"-rectangular" { set orthorhombic 1 }
+                "-cell"       { set wraptype $val; incr argnum }
 		"-center" { set center $val; incr argnum }
 		"-centersel" { set centerseltext $val; incr argnum }
 		"-shiftcenter" { set shiftcenter $val; incr argnum }
@@ -81,11 +79,22 @@ namespace eval ::PBCTools:: {
 	set Cz [lindex $C 2]
 	
 	# compute the origin (lower left corner)
-	if { $orthorhombic } then {
-	    set origin [vecscale -0.5 [list $Ax $By $Cz]] 
-	} else {
-	    set origin [vecscale -0.5 [vecadd $A $B $C]] 
-	}
+	switch -- $wraptype {
+	    "para" -
+            "parallelepiped" {
+                set origin [vecscale -0.5 [vecadd $A $B $C]] 
+                set wraptype "para"
+            }
+	    "brick" -
+	    "ortho" -
+	    "orthorhombic" -
+	    "rect" -
+	    "rectangular" {
+                set origin [vecscale -0.5 [list $Ax $By $Cz]] 
+                set wraptype "brick"
+            }
+	    default { error "pbcbox: unknown/unimplemented cell type: $wraptype" }
+        }
 	switch -- $center {
 	    "unitcell" { set origin { 0 0 0 } }
 	    "origin" {}
@@ -161,11 +170,11 @@ namespace eval ::PBCTools:: {
 			   ]
 	}
 
-	if { $orthorhombic } then {
-	    set A [list $Ax 0 0]
-	    set B [list 0 $By 0 ]
-	    set C [list 0 0 $Cz ]
-	}
+	if { $wraptype == "brick" } then {
+            set A [list $Ax 0 0]
+            set B [list 0 $By 0 ]
+            set C [list 0 0 $Cz ]
+        }
 
 	# set up cell vertices
 	set vert(0) $origin
