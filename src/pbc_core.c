@@ -152,7 +152,7 @@ int tcl_decode(ClientData nodata, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 
-    x = cartcoor = malloc(sizeof(double)*3*n);
+    x = cartcoor = (double*) malloc(sizeof(double)*3*n);
     for(i=0; i<n; i++, x+=3) {
         PARSE_VEC("coordinates", vecs[i], x);
     }
@@ -176,6 +176,7 @@ int tcl_decode(ClientData nodata, Tcl_Interp *interp,
     return TCL_OK;
 }
 
+extern "C" {
 /* register the plugin with the tcl interpreters */
 int DLLEXPORT Pbc_core_Init(Tcl_Interp *interp) {
     if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
@@ -196,5 +197,5 @@ int Pbc_core_Unload(Tcl_Interp *interp, int flags) { return TCL_OK; }
 int Pbc_core_SafeUnload(Tcl_Interp *interp, int flags) {
     return Pbc_core_Unload(interp, flags);
 }
-
+}
 

@@ -17,15 +17,13 @@
 # with 
 # gcc -m32 -shared -o libpbc_core.so -DUSE_TCL_STUBS -I"$TCLINC" pbc_core.c -L"$TCLLIB" -ltclstub8.5
 
-.SUFFIXES:
-
-.SILENT:
-
 AR= ar
 ARFLAGS = cr
 RANLIB = ranlib
 COMPILEDIR = ../compile
 INCDIR=-Isrc
+SRCDIR=src
+
 #CXXFLAGS = -g $(CXXFLAGS)
 CXXFLAGS += -g
 
@@ -33,14 +31,15 @@ VMFILES = pbcbox.tcl pbcgui.tcl pbcjoin.tcl pbcset.tcl pbctools.tcl \
 	pbcunwrap.tcl pbcwrap.tcl pkgIndex.tcl
 
 VMVERSION = 2.8
-DIR = $(PLUGINDIR)/noarch/tcl/pbctools$(VMVERSION)
-VPATH=$(DIR)
+ARCHDIR=${COMPILEDIR}/lib_${ARCH}/tcl/pbctools$(VMVERSION)
+
+VPATH = src ${ARCHDIR}
 
 # only build so if we have a Tcl library
 ifdef TCLLIB
 ifdef TCLINC
 ifdef TCLLDFLAGS
-    TARGETS = $(DIR) $(PLUGINDIR)/libpbc_core.so
+    TARGETS = ${ARCHDIR} ${ARCHDIR}/libpbc_core.so
 endif
 endif
 endif
@@ -52,18 +51,24 @@ staticlibs:
 win32staticlibs:
 
 distrib:
-	@echo "Copying pbctools $(VMVERSION) files to $(DIR)"
-	mkdir -p $(DIR) 
-	cp $(COMPILEDIR)/libpbc_core.so $(PLUGINDIR)/$$pluginname;
-	cp $(VMFILES) $(DIR) 
+	for localname in `find ../compile -name libpbc_core.so -print` ; do \
+		pluginname=`echo $$localname | sed s/..\\\/compile\\\/lib_// `; \
+		dir=`dirname $(PLUGINDIR)/$$pluginname`; \
+		mkdir -p $$dir; \
+		cp $$localname $(PLUGINDIR)/$$pluginname; \
+		cp $(VMFILES) $$dir ; \
+	done
+${ARCHDIR}:
+	mkdir -p ${ARCHDIR}
 
+LIBPBCOBJS=${ARCHDIR}/pbc_core.o
 
-${DIR}/libpbc_core.so: pbc_core.o
+${ARCHDIR}/libpbc_core.so: ${LIBPBCOBJS}
 	if [ -n "${TCLSHLD}" ]; \
-	then ${TCLSHLD} $(LOPTO)$@ pbc_core.o ${TCLLIB} ${TCLLDFLAGS} ${LDFLAGS}; \
-	else ${SHLD} $(LOPTO)$@ pbc_core.o ${TCLLIB} ${TCLLDFLAGS} ${LDFLAGS}; \
+	then ${TCLSHLD} $(LOPTO)$@ ${LIBPBCOBJS} ${TCLLIB} ${TCLLDFLAGS} ${LDFLAGS}; \
+	else ${SHLD} $(LOPTO)$@ ${LIBPBCOBJS} ${TCLLIB} ${TCLLDFLAGS} ${LDFLAGS}; \
 	fi
 
-pbc_core.o: pbc_core.c
-	${CXX} ${CXXFLAGS} -g ${TCLINC} ${INCDIR} -D_${ARCH} -c $< $(COPTO) $@
+${ARCHDIR}/pbc_core.o: pbc_core.c
+	${CXX} ${CXXFLAGS} ${TCLINC} ${INCDIR} -c ${SRCDIR}/pbc_core.c $(COPTO)${ARCHDIR}/pbc_core.o
 
