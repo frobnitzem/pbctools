@@ -40,6 +40,7 @@ namespace eval ::PBCTools:: {
 	set molid "top"
 	set first "now"
 	set last "now"
+	set bigdcd 0
 	set wraptype "brick"
 	set sel "all"
 	set compound ""
@@ -61,6 +62,7 @@ namespace eval ::PBCTools:: {
 		"-allframes" -
 		"-all" { set last "last"; set first "first" }
 		"-now" { set last "now"; set first "now" }
+		"-bigdcd" { set last "now"; set first "now"; set bigdcd 1 }
 		"-sel" { set sel $val; incr argnum }
 		"-nocompound" { set compound "" }
 		"-compound" { set compound $val; incr argnum }
@@ -271,9 +273,13 @@ namespace eval ::PBCTools:: {
 	}
 
 	# Rewind to original frame
-	if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
-	animate goto $frame_before
-    }
+	if { $bigdcd } then {
+		if { $verbose } then { vmdcon -info "Using bigdcd, no rewinding done." }
+		} else {
+		if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
+		animate goto $frame_before
+		}
+	}
 
     #########################################################
     # Wrap the selection $wrapsel of molecule $molid
