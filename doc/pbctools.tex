@@ -414,6 +414,10 @@ pbc wrap -cell orthorhombic -shiftcenterrel {1 0 0}
 & Equivalent to \texttt{-first now -last now}.
 \\ \hline
 
+\texttt{-bigdcd}
+& Equivalent to \texttt{-first now -last now}, but without the internal animate command to rewind back to where you stated the wrap. Used when using \texttt{pbc wrap} inside a \texttt{proc} to used with the bigdcd.tcl script for handling large trajectories.
+\\ \hline
+
 \texttt{-cell} \texttt{compact}$|$\texttt{para}[\texttt{llelepiped}]$|$\texttt{brick}$|$\texttt{orthorhombic}$|$\texttt{rectangular}
 & Defines the wrapping type.  Brick is the default, and is the fastest
 method.  Rectangular, brick, and orthorhombic are all synonyms.
