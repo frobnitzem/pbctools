@@ -271,8 +271,11 @@ namespace eval ::PBCTools:: {
 	}
 
 	# Rewind to original frame
-	if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
-	animate goto $frame_before
+        if { $frame_before != $last } then {
+	  if { $verbose } then { vmdcon -info "Rewinding to frame $frame_before." }
+	  #animate goto $frame_before
+          molinfo $molid set frame $frame_before
+        }
     }
 
     #########################################################
