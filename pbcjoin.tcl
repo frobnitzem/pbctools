@@ -18,10 +18,10 @@ namespace eval ::PBCTools:: {
     # split due to wrapping around the unit cell boundaries, so that
     # they are not split anymore. $compound must be one of the values
     # "residue", "chain", "segment", "fragment" or "connected".
-    # 
+    #
     # OPTIONS:
     #   -molid $molid|top
-    #   -first $first|first|now 
+    #   -first $first|first|now
     #   -last $last|last|now
     #   -all|allframes
     #   -now
@@ -47,22 +47,22 @@ namespace eval ::PBCTools:: {
 	# Normalize compoundtype
 	switch -- $compoundtype {
 	    "seg" -
-	    "segid" { 
-		set compoundtype "segid" 
+	    "segid" {
+		set compoundtype "segid"
 		set compoundseltext "segid %s"
 	    }
 	    "res" -
 	    "resid" -
-	    "residue" { 
-		set compoundtype "residue" 
+	    "residue" {
+		set compoundtype "residue"
 		set compoundseltext "residue %s"
 	    }
-	    "chain" { 
-		set compoundtype "chain" 
+	    "chain" {
+		set compoundtype "chain"
 		set compoundseltext "chain %s"
 	    }
-	    "fragment" { 
-		set compoundtype "fragment" 
+	    "fragment" {
+		set compoundtype "fragment"
 		set compoundseltext "fragment %s"
 	    }
 	    "bonded" -
@@ -101,15 +101,15 @@ namespace eval ::PBCTools:: {
 		default { error "pbcjoin: unknown option: $arg" }
 	    }
 	}
-	    
+
 	if { $molid eq "top" } then { set molid [ molinfo top ] }
-	    
+
 	# Save the current frame number
 	set frame_before [ molinfo $molid get frame ]
 
 	if { $first eq "now" }   then { set first $frame_before }
-	if { $first eq "first" || $first eq "start" || $first eq "begin" } then { 
-	    set first 0 
+	if { $first eq "first" || $first eq "start" || $first eq "begin" } then {
+	    set first 0
 	}
 	if { $last eq "now" }    then { set last $frame_before }
 	if { $last eq "last" || $last eq "end" } then {
@@ -140,13 +140,15 @@ namespace eval ::PBCTools:: {
 		vmdcon -info "Joining compounds in frame $frame ($framecnt/$numframes)."
 	    }
 	    molinfo $molid set frame $frame
-	    
-	    # get the current cell 
+
+	    # get the current cell
 	    set cell [lindex [pbc get -molid $molid -namd] 0]
 	    set A [lindex $cell 0]
 	    set B [lindex $cell 1]
 	    set C [lindex $cell 2]
-	    
+
+      vmdcon -info "Using reference cell $A, $B, $C."
+
 	    set cell [lindex [pbc get -molid $molid -vmd] 0]
 	    pbc_check_cell $cell
 
@@ -155,22 +157,22 @@ namespace eval ::PBCTools:: {
 	    # create a list of all compounds in sel: these compounds need to be tested
 	    set compoundlist {}
 	    switch -- $compoundtype {
-		"segid" { 
-		    foreach segid [lsort -unique [$sel get segid]] { 
-			lappend compoundlist "segid $segid" 
+		"segid" {
+		    foreach segid [lsort -unique [$sel get segid]] {
+			lappend compoundlist "segid $segid"
 		    }
 		}
-		"residue" { 
+		"residue" {
 		    foreach resid [lsort -integer -unique [$sel get residue]] {
 			lappend compoundlist "residue $resid"
 		    }
 		}
-		"chain" { 
+		"chain" {
 		    foreach chain [lsort -integer -unique [$sel get chain]] {
 			lappend compoundlist "chain $chain"
 		    }
 		}
-		"fragment" { 
+		"fragment" {
 		    foreach fragment [lsort -integer -unique [$sel get fragment]] {
 			lappend compoundlist "fragment $fragment"
 		    }
@@ -187,7 +189,7 @@ namespace eval ::PBCTools:: {
 		vmdcon -warn "Did not find any compounds to join in frame $frame!"
 		continue
 	    }
-	
+
 	    if { $verbose } then {
 		set numcompounds  [llength $compoundlist]
 		vmdcon -info "Testing $numcompounds compounds."
@@ -215,7 +217,7 @@ namespace eval ::PBCTools:: {
 		set compound [atomselect $molid $compoundtxt frame $frame]
 
 		# test whether it really has more than one atom
-		if { [$compound num] > 2 } then {
+		if { [$compound num] > 1 } then {
 
 		    # use fast algorithm for molecules that are small
 		    if { !$bondlist } {
@@ -295,6 +297,8 @@ namespace eval ::PBCTools:: {
 			    set aidx  [lsearch -integer -sorted $atmmap $atm]
 			    set bonds [lindex $bndmap $aidx]
 
+          vmdcon -info "..Testing atom $atm with map idx $aidx and bonds $bonds."
+
 			    set idx {}
 			    set xs {}
 			    set ys {}
@@ -304,11 +308,15 @@ namespace eval ::PBCTools:: {
 			    set rzs {}
 			    foreach bnd $bonds {
 				# handle atoms only once
+        vmdcon -info "....Testing bonding partner $bnd."
 				if { $atm > $bnd } continue
+        vmdcon -info "....Bonding partner $bnd not yet visited."
 				# only join bonds within the same compound
 				if { [lsearch -integer -sorted $atmmap $bnd] < 0 } continue
+        vmdcon -info "....Bonding partner $bnd in same compound."
 
 				set bidx [lsearch -integer -sorted $atmmap $bnd]
+        vmdcon -info "....Bonding partner map idx $bidx."
 				lappend idx $bidx
 				lappend xs [lindex $atmcrd $bidx 0]
 				lappend ys [lindex $atmcrd $bidx 1]
@@ -317,8 +325,12 @@ namespace eval ::PBCTools:: {
 				lappend rys [lindex $atmcrd $aidx 1]
 				lappend rzs [lindex $atmcrd $aidx 2]
 			    }
+
 			    if { [llength $idx] > 0 } {
+        vmdcon -info "..Reference coordinates $rxs, $rys, $rzs."
+        vmdcon -info "..Found coordinates $xs, $ys, $zs."
 				pbcwrap_coordinates $A $B $C xs ys zs $rxs $rys $rzs
+        vmdcon -info "..Wrapped coordinates $xs, $ys, $zs."
 				foreach i $idx x $xs y $ys z $zs {
 				    set atmcrd [lreplace $atmcrd $i $i [list $x $y $z]]
 				}
@@ -346,7 +358,7 @@ namespace eval ::PBCTools:: {
 		}
 		incr compoundcnt
 		incr totalcnt
-	    } 
+	    }
 	    # END foreach compoundtxt $compoundlist
 
 	    # wrapping only needed for the fast algorithm
