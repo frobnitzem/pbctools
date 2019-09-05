@@ -31,8 +31,9 @@ namespace eval ::PBCTools:: {
     #   -noref|-ref $sel
     #   -nobondlist|-bondlist
     #   -[no]verbose
+    #   -[no]debug
     #
-    # AUTHOR: Olaf
+    # AUTHOR: Olaf, Johannes
     #
     proc pbcjoin { compoundtype args } {
         # Set the defaults
@@ -101,6 +102,7 @@ namespace eval ::PBCTools:: {
             "-verbose" { set verbose 1 }
             "-debug" { set debug 1 }
             "-noverbose" { set verbose 0 }
+            "-nodebug" { set debug 0 }
             default { error "pbcjoin: unknown option: $arg" }
             }
         }
