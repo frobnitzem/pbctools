@@ -18,7 +18,7 @@ namespace eval ::PBCTools:: {
     #   Joins compounds of type $compound of atoms that have been
     # split due to wrapping around the unit cell boundaries, so that
     # they are not split anymore. $compound must be one of the values
-    # "residue", "chain", "segment", "fragment" or "connected".
+    # "resid", "residue", "chain", "segment", "fragment" or "connected".
     #
     # OPTIONS:
     #   -molid $molid|top
@@ -54,8 +54,11 @@ namespace eval ::PBCTools:: {
                 set compoundtype "segid"
                 set compoundseltext "segid %s"
             }
+            "resid" {
+                set compoundtype "resid"
+                set compoundseltext "resid %s"
+            }
             "res" -
-            "resid" -
             "residue" {
                 set compoundtype "residue"
                 set compoundseltext "residue %s"
@@ -76,7 +79,7 @@ namespace eval ::PBCTools:: {
             default {
                 vmdcon -err "pbcjoin: unknown compound type $compoundtype"
                 vmdcon -err "pbcjoin: syntax: pbc join <compound> \[<options> ...\]"
-                vmdcon -err "pbcjoin: supported compound types: segment, residue, chain, fragment, connected"
+                vmdcon -err "pbcjoin: supported compound types: segment, resid, residue, chain, fragment, connected"
                 error "pbcjoin: argument parse error"
             }
         }
@@ -165,6 +168,11 @@ namespace eval ::PBCTools:: {
                 "segid" {
                     foreach segid [lsort -unique [$sel get segid]] {
                         lappend compoundlist "segid $segid"
+                    }
+                }
+                "resid" {
+                    foreach resid [lsort -integer -unique [$sel get resid]] {
+                        lappend compoundlist "resid $resid"
                     }
                 }
                 "residue" {

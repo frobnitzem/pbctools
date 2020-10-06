@@ -96,8 +96,8 @@ namespace eval ::PBCTools:: {
 	# handle compounds
 	switch -- $compound {
 	    "" {}
+	    "resid" { set compound "resid" }
 	    "res" -
-	    "resid" -
 	    "residue" { set compound "residue" }
 	    "seg" -
 	    "segid" { set compound "segid" }
@@ -307,7 +307,7 @@ namespace eval ::PBCTools:: {
     # Wrap all atoms in $wrapsel to their closest approach
     # to the origin.  This ignores molecule selections
     # because there doesn't seem to be a way to loop
-    # over residues / chains / etc. inside the selection.
+    # over resid / residues / chains / etc. inside the selection.
     #
     # TODO:
     # Maybe there's a way to select the first atom of each residue,
