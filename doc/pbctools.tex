@@ -23,8 +23,8 @@
 
 \begin{document}
 \title{\pbctools Plugin User's Guide}
-\author{Jerome Henin \and Olaf Lenz \and Cameron Mura \and Jan Saam}
-\date{Version 2.8}
+\author{Jerome Henin \and Olaf Lenz \and Cameron Mura \and David M. Rogers \and Jan Saam}
+\date{Version 3.0}
 
 \maketitle
 
@@ -76,7 +76,7 @@ printed. The list of available subcommands can be found in table
     & When the atoms of the system are not all in one periodic image,
     but are distributed over various images, this function wraps all
     atoms into the chosen image. It is also possible to change between
-    different representations of the unit cell (orthorhombic or triclinic).
+    different representations of the unit cell (brick, triclinic, or compact).
     & \pageref{sec:wrap}
     \\\hline
   
@@ -130,7 +130,7 @@ VMD distribution, you can activate the \pbctools plugin as follows:
 \begin{enumerate}
 \item Fetch the \pbctools plugin from Github
 \begin{Verbatim}
-git clone git://github.com/olenz/pbctools.git
+git clone git://github.com/frobnitzem/pbctools.git
 \end{Verbatim}
 This will create a new directory \texttt{pbctools} in the current
 directory.
@@ -146,6 +146,7 @@ package require pbctools
 %$
 \end{enumerate}
 
+  Harel Weinstein has written some very \href{http://physiology.med.cornell.edu/faculty/hweinstein/vmdplugins/installation.html}{detailed instructions} on installing third-party plugins that may also be helpful.
 
 \newpage
 \section{\texttt{set} -- Setting the unitcell parameters}
@@ -379,7 +380,7 @@ Wrap atoms into a single unitcell.
 
 \begin{Verbatim}
 # wrap the system into the orthorhombic box shifted by one box length in X-dir
-pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
+pbc wrap -cell orthorhombic -shiftcenterrel {1 0 0}
 \end{Verbatim}
 
 
@@ -413,11 +414,13 @@ pbc wrap -orthorhombic -shiftcenterrel {1 0 0}
 & Equivalent to \texttt{-first now -last now}.
 \\ \hline
 
-\texttt{-parallelepiped} $|$\texttt{-orthorhombic}
-& Wrap the atoms into the unitcell parallelepiped or the corresponding
-orthorhombic box with the same volume and center as the
-(non-orthrhombic) unitcell. The unitcell displacement vectors are not
-changed (default: \texttt{-parallelepiped}).
+\texttt{-cell} \texttt{compact}$|$\texttt{para}[\texttt{llelepiped}]$|$\texttt{brick}$|$\texttt{orthorhombic}$|$\texttt{rectangular}
+& Defines the wrapping type.  Brick is the default, and is the fastest
+method.  Rectangular, brick, and orthorhombic are all synonyms.
+Compact wrapping places atoms into the most compact (Voronoi) unit cell representation,
+while parallelepiped places atoms into a unit cube in reciprocal space.
+For rectangular cells (all angles are 90 degrees), all methods are equivalent.
+The unitcell displacement vectors are not changed (default: \texttt{-brick}).
 \\ \hline
 
 \texttt{-sel} \textit{sel}
@@ -430,6 +433,7 @@ this if you don't want to wrap all atoms.
 atoms will not be wrapped if a compound would be split by the
 wrapping: residues, segments or chains (default:
 \texttt{-nocompound}).
+Note: this does not presently work with \texttt{-cell compact}.
 \\ \hline
 
 \texttt{-nocompoundref} $|$\texttt{-compoundref} \textit{refsel}
@@ -475,10 +479,6 @@ three numerical values. (default: \verb!{0 0 0}!)
 \texttt{-}[\texttt{no}]\texttt{verbose}
 & Turn on/off verbosity of the function (for debugging) (default:
 \texttt{-noverbose}).
-\\ \hline
-
-\texttt{-}[\texttt{no}]\texttt{draw}
-& Draw some test vectors (for debugging) (default: \texttt{-nodraw}).
 \\ \hline
 
 \end{longtable}
@@ -589,7 +589,8 @@ procedure \texttt{unwrap} to all of the frames:
 
 Note also, that the (faster) default algorithm only works when none of
 the compounds stretches more than half the periodic box in any direction.
-With the option \texttt{-bondlist} you can select an alternate algorithm
+If this is not the case, something is probably wrong with your simulation.
+Nevertheless, \texttt{-bondlist} selects an alternate algorithm
 that joins compounds based on direct bonds and does not suffer from this
 limitation, but can be significantly slower.
 
@@ -666,7 +667,7 @@ reference atom (default: \texttt{-noref}).
 \newpage
 \section{\texttt{box} and \texttt{box\_draw} -- Drawing the unit cell boundaries}
 
-\subsection{\texttt{box} -- Automatically updateing box}
+\subsection{\texttt{box} -- Automatically updating box}
 \label{sec:box}
 
 \minisec{Syntax}
@@ -701,9 +702,9 @@ pbc box -center origin
 \texttt{-on})
 \\ \hline
 
-\texttt{-parallelepiped} $|$\texttt{-orthorhombic}
+\texttt{-cell} \texttt{para}[\texttt{llelepiped}]$|$\texttt{brick}$|$\texttt{rect}[\texttt{angular}]$|$\texttt{ortho}[\texttt{rhombic}]
 & Draw the box as a parallelpiped, or as the corresponding
-orthorhombic box. (default: \texttt{-parallelepiped}).
+orthorhombic (aka rectangular/brick) box. (default: \texttt{-cell parallelepiped}).
 \\ \hline
 
 \texttt{-color} \textit{color}
@@ -800,14 +801,15 @@ The \pbctools plugin has been written by (in alphabetical order)
 \begin{itemize}
 \item Toni Giorgino \texttt{<toni.giorgino \_at\_ isib.cnr.it>}
 \item Jerome Henin \texttt{<jhenin \_at\_ cmm.upenn.edu>}
-\item Olaf Lenz \texttt{<olenz \_at\_ icp.uni-stuttgart.de>} (maintainer)
+\item Olaf Lenz \texttt{<olenz \_at\_ icp.uni-stuttgart.de>}
 \item Cameron Mura \texttt{<cmura \_at\_ mccammon.ucsd.edu>}
+\item David M. Rogers \texttt{<predictivestatmech \_at\_ gmail.com>} (maintainer)
 \item Jan Saam \texttt{<saam \_at\_ charite.de>}
 \end{itemize}
 The \texttt{pbcbox} procedure copies a lot of the ideas of Axel
 Kohlmeyer's script \texttt{vmd\_draw\_unitcell}.
 Please submit your bug reports, comments and feature requests on the
 \pbctools
-homepage\footnote{\url{http://github.com/olenz/pbctools/}}.
+homepage\footnote{\url{http://github.com/frobnitzem/pbctools/}}.
 
 \end{document}
