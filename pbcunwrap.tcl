@@ -81,6 +81,10 @@ namespace eval ::PBCTools:: {
 	set oldys [$sel get y]
 	set oldzs [$sel get z]
 
+	set unwrapx $oldxs
+	set unwrapy $oldys
+	set unwrapz $oldzs
+
 	set next_time [clock clicks -milliseconds]
 	set show_step 1000
 	set fac [expr 100.0/($last - $first + 1)]
@@ -105,18 +109,28 @@ namespace eval ::PBCTools:: {
 	    set ys [$sel get y]
 	    set zs [$sel get z]
 
-	    # wrap the coordinates
-	    pbcwrap_coordinates $A $B $C xs ys zs $oldxs $oldys $oldzs
-	    
-	    # set the new coordinates
-	    $sel set x $xs
-	    $sel set y $ys 
-	    $sel set z $zs
+	    # compute the wrapped displacement. See 10.1063/5.0008316
+	    set vx [vecsub $xs $oldxs]
+	    set vy [vecsub $ys $oldys]
+	    set vz [vecsub $zs $oldzs]
 
-	    # save the coordinates
+	    # store current wrapped coordinates, needed for the next step
 	    set oldxs $xs
 	    set oldys $ys
 	    set oldzs $zs
+
+	    # unwrap the displacements
+	    pbcwrap_coordinates $A $B $C vx vy vz 0 0 0
+
+	    # add displacements to previous unwrapped coordinates
+	    set unwrapx [vecadd $vx $unwrapx]
+		set unwrapy [vecadd $vy $unwrapy]
+		set unwrapz [vecadd $vz $unwrapz]
+	    
+	    # set the new coordinates
+	    $sel set x $unwrapx
+	    $sel set y $unwrapy
+	    $sel set z $unwrapz
 
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {
