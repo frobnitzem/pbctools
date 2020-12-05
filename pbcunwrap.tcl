@@ -8,7 +8,7 @@
 # $Id$
 #
 
-package provide pbctools 3.0
+package provide pbctools 3.1
 
 namespace eval ::PBCTools:: {
     namespace export pbc*
@@ -24,6 +24,8 @@ namespace eval ::PBCTools:: {
     #   -all|allframes
     #   -sel $sel
     #   -[no]verbose
+    #   -[no]heuristic
+    #   -[no]displacement
     #
     # AUTHORS: Olaf, Jerome, Cameron
     #
@@ -34,6 +36,7 @@ namespace eval ::PBCTools:: {
 	set last "last"
 	set seltext "all"
 	set verbose 0
+	set heuristic 0
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
@@ -49,6 +52,10 @@ namespace eval ::PBCTools:: {
 		"-sel" { set seltext $val; incr argnum }
 		"-verbose" { set verbose 1 }
 		"-noverbose" { incr verbose 0 }
+		"-noheuristic" { set heuristic 0 }
+		"-heuristic" { incr heuristic } 
+		"-displacement" { set heuristic 0 }
+		"-nodisplacement" { incr heuristic } 
 		default { error "pbcunwrap: unknown option: $arg" }
 	    }
 	}
@@ -81,10 +88,12 @@ namespace eval ::PBCTools:: {
 	set oldys [$sel get y]
 	set oldzs [$sel get z]
 
-	set unwrapx $oldxs
-	set unwrapy $oldys
-	set unwrapz $oldzs
-
+	if { $heuristic == 0 } {
+		set unwrapx $oldxs
+		set unwrapy $oldys
+		set unwrapz $oldzs
+	}
+	
 	set next_time [clock clicks -milliseconds]
 	set show_step 1000
 	set fac [expr 100.0/($last - $first + 1)]
@@ -109,28 +118,40 @@ namespace eval ::PBCTools:: {
 	    set ys [$sel get y]
 	    set zs [$sel get z]
 
-	    # compute the wrapped displacement. See 10.1063/5.0008316
-	    set vx [vecsub $xs $oldxs]
-	    set vy [vecsub $ys $oldys]
-	    set vz [vecsub $zs $oldzs]
+	    if { $heuristic } {
+	    	# wrap the coordinates
+		    pbcwrap_coordinates $A $B $C xs ys zs $oldxs $oldys $oldzs
+		    
+		    # set the new coordinates
+		    $sel set x $xs
+		    $sel set y $ys 
+		    $sel set z $zs
 
-	    # store current wrapped coordinates, needed for the next step
-	    set oldxs $xs
-	    set oldys $ys
-	    set oldzs $zs
+		#This calculates unwrapping based on displacement
+	    } else {
+	    	# compute the wrapped displacement. See 10.1063/5.0008316
+		    set vx [vecsub $xs $oldxs]
+		    set vy [vecsub $ys $oldys]
+		    set vz [vecsub $zs $oldzs]
 
-	    # unwrap the displacements
-	    pbcwrap_coordinates $A $B $C vx vy vz 0 0 0
+		    # unwrap the displacements
+		    pbcwrap_coordinates $A $B $C vx vy vz 0 0 0
 
-	    # add displacements to previous unwrapped coordinates
-	    set unwrapx [vecadd $vx $unwrapx]
-		set unwrapy [vecadd $vy $unwrapy]
-		set unwrapz [vecadd $vz $unwrapz]
-	    
-	    # set the new coordinates
-	    $sel set x $unwrapx
-	    $sel set y $unwrapy
-	    $sel set z $unwrapz
+		    # add displacements to previous unwrapped coordinates
+		    set unwrapx [vecadd $vx $unwrapx]
+			set unwrapy [vecadd $vy $unwrapy]
+			set unwrapz [vecadd $vz $unwrapz]
+		    
+		    # set the new coordinates
+		    $sel set x $unwrapx
+		    $sel set y $unwrapy
+		    $sel set z $unwrapz
+	    }
+
+	    # save the coordinates
+		set oldxs $xs
+		set oldys $ys
+		set oldzs $zs
 
 	    set time [clock clicks -milliseconds]
 	    if {$verbose || $frame == $last || $time >= $next_time} then {

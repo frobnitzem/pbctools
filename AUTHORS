@@ -9,6 +9,7 @@ The PBCTools plugin has been written by (in alphabetical order)
 * Cameron Mura <cmura _at_ mccammon.ucsd.edu>
 * David M. Rogers <davidrogers _at_ predictivestatmech.org>
 * Jan Saam <saam _at_ charite.de>
+* Josh Vermaas <joshua.vermaas _at_ gmail.com>
 
 The "pbcbox" procedure copies a lot of the ideas of Axel Kohlmeyer's
 script "vmd_draw_unitcell".  David Rogers added shortest vector
