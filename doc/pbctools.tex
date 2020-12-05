@@ -24,7 +24,7 @@
 \begin{document}
 \title{\pbctools Plugin User's Guide}
 \author{Jerome Henin \and Olaf Lenz \and Cameron Mura \and David M. Rogers \and Jan Saam}
-\date{Version 3.0}
+\date{Version 3.1}
 
 \maketitle
 
@@ -555,6 +555,22 @@ this if you don't want to unwrap all atoms.
 \texttt{-}[\texttt{no}]\texttt{verbose}
 & Turn on/off verbosity of the function (for debugging) (default:
 \texttt{-noverbose}).
+\\ \hline
+
+\texttt{-}[\texttt{no}]\texttt{heuristic}
+& Change between the heuristic and displacement methods for unwrapping
+NpT simulations. \texttt{-noheuristic} switches to the displacement
+method from \href{https://aip.scitation.org/doi/full/10.1063/5.0008316}{von B\"ulow et al},
+while the default \texttt{-heuristic} algorithm is what MD engines use.
+For most applications, \texttt{-heuristic} should be preferred.
+\\ \hline
+
+\texttt{-}[\texttt{no}]\texttt{displacement}
+& Change between the heuristic and displacement methods for unwrapping
+NpT simulations. \texttt{-displacement} switches to the displacement
+method from \href{https://aip.scitation.org/doi/full/10.1063/5.0008316}{von B\"ulow et al},
+while the default algorithm is what MD engines use. This is the converse
+of the \texttt{-heuristic}, and so \texttt{-nodisplacement} is the default.
 \\ \hline
 \end{tabular}
 
