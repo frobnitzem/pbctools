@@ -36,7 +36,7 @@ namespace eval ::PBCTools:: {
 	set last "last"
 	set seltext "all"
 	set verbose 0
-	set heuristic 0
+	set heuristic 1
 	
 	# Parse options
 	for { set argnum 0 } { $argnum < [llength $args] } { incr argnum } {
