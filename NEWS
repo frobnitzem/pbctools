@@ -1,8 +1,8 @@
-Changes in v3.0a1
+Changes in v3.1
 ---------------
 
 * Changed the unwrapping scheme to the corrected displacement scheme from
-  kulke & Vermaas. The previous unwrapping method calculated wrong results
+  Kulke & Vermaas. The previous unwrapping method calculated wrong results
   at very large simulation time lengths (atoms move >18 periodic boxes).
 * added -heuristic and -displacement flag to pbc unwrap. The displacement method
   is the standard method used, if both flags are not specified.
