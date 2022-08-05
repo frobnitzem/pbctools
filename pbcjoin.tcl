@@ -6,7 +6,7 @@
 # $Id$
 #
 
-package provide pbctools 3.0
+package provide pbctools 3.1
 package require struct::queue
 
 namespace eval ::PBCTools:: {

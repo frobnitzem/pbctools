@@ -32,7 +32,7 @@ CXXFLAGS += -g
 VMFILES = pbcbox.tcl pbcgui.tcl pbcjoin.tcl pbcset.tcl pbctools.tcl \
 	pbcunwrap.tcl pbcwrap.tcl pkgIndex.tcl
 
-VMVERSION = 3.0
+VMVERSION = 3.1
 ARCHDIR=${COMPILEDIR}/lib_${ARCH}/tcl/pbctools$(VMVERSION)
 
 VPATH = src ${ARCHDIR}
