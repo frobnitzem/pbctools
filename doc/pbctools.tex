@@ -82,7 +82,7 @@ printed. The list of available subcommands can be found in table
   
     \texttt{unwrap} [\textit{options}\dots]
     & When overlong bonds (that stretch the whole system) occur and
-    compounds (residues, segments, chains or fragments) are broken in
+    compounds (resids, residues, segments, chains or fragments) are broken in
     the course of a simulation trajectory because atoms are wrapped
     around the periodic boundaries, this function will remove large
     jumps of atoms between consecutive frames.
@@ -431,7 +431,7 @@ this if you don't want to wrap all atoms.
 \texttt{-nocompound}\linebreak $|$\texttt{-compound} \texttt{res}[\texttt{id}[\texttt{ue}]]$|$\texttt{seg}[\texttt{id}]$|$\texttt{chain}$|$\texttt{fragment}
 & Defines, which atom compounds should be kept together, \ie which
 atoms will not be wrapped if a compound would be split by the
-wrapping: residues, segments or chains (default:
+wrapping: resids, residues, segments or chains (default:
 \texttt{-nocompound}).
 Note: this does not presently work with \texttt{-cell compact}.
 \\ \hline
@@ -560,7 +560,7 @@ this if you don't want to unwrap all atoms.
 
 
 \newpage
-\section{\texttt{join} -- Joining residues, chains, segments, fragments,
+\section{\texttt{join} -- Joining resids, residues, chains, segments, fragments,
   and connected/bonded groups}
 \label{sec:join}
 
